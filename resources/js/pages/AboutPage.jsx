@@ -156,20 +156,61 @@ export default function AboutPage({ about, ready = true }) {
 
             if (bodyPathRef.current) {
                 const pathEl = bodyPathRef.current.querySelector('path');
+                const storyTeamWrapper = pageRef.current?.querySelector('.about-story-team-wrapper');
+                const isMobile = window.innerWidth < 768;
+                const baseWidth = isMobile ? 50 : window.innerWidth < 992 ? 75 : 100;
+
                 if (pathEl) {
                     const len = pathEl.getTotalLength();
-                    gsap.set(pathEl, { strokeDasharray: len, strokeDashoffset: len });
-                    gsap.to(pathEl, {
-                        strokeDashoffset: 0,
-                        ease: 'none',
+                    gsap.set(pathEl, {
+                        strokeDasharray: len,
+                        strokeDashoffset: len,
+                        strokeWidth: baseWidth,
+                    });
+
+                    // TWEEN 1: Path Draw Progress
+                    const drawTl = gsap.timeline({
                         scrollTrigger: {
                             trigger: '.about-story-team',
-                            start: 'top 75%',
-                            end: 'bottom 85%',
-                            scrub: 0.7,
+                            start: 'top 80%',
+                            end: 'bottom bottom',
+                            scrub: 0.8,
                             invalidateOnRefresh: true,
                         },
                     });
+                    drawTl
+                        .to(pathEl, { strokeDashoffset: len * (isMobile ? 0.45 : 0.75), duration: isMobile ? 0.05 : 0.08, ease: 'power1.out' })
+                        .to(pathEl, { strokeDashoffset: len * (isMobile ? 0.1 : 0.12), duration: isMobile ? 0.07 : 0.12, ease: 'power2.inOut' })
+                        .to(pathEl, { strokeDashoffset: 0, duration: isMobile ? 0.03 : 0.05, ease: 'power1.out' })
+                        .to({}, { duration: isMobile ? 0.17 : 0.07 });
+
+                    // TWEEN 2: Stroke Width Expansion (100 -> 2500) + Orange Flood
+                    const floodStart = isMobile ? 0.1 : 0.2;
+                    const floodDuration = isMobile ? 0.03 : 0.05;
+                    const bgDuration = isMobile ? 0.06 : 0.1;
+
+                    const floodTl = gsap.timeline({
+                        scrollTrigger: {
+                            trigger: '.about-story-team',
+                            start: 'top 80%',
+                            end: 'bottom bottom',
+                            scrub: 0.8,
+                            invalidateOnRefresh: true,
+                        },
+                    });
+
+                    floodTl.to(pathEl, { strokeWidth: 2500, duration: floodDuration, ease: 'power2.inOut' }, floodStart);
+
+                    if (storyTeamWrapper) {
+                        floodTl.fromTo(
+                            storyTeamWrapper,
+                            { backgroundColor: 'rgba(255, 84, 0, 0)' },
+                            { backgroundColor: 'rgba(255, 84, 0, 1)', duration: bgDuration, ease: 'power2.inOut' },
+                            floodStart
+                        );
+                    }
+
+                    floodTl.to({}, { duration: 0.32 - (floodStart + bgDuration) }, floodStart + bgDuration);
                 }
             }
 
@@ -348,7 +389,7 @@ export default function AboutPage({ about, ready = true }) {
             </section>
 
             {/* 2. ABOUT STORY & TEAM */}
-            <section className="about-story-team">
+            <section className="about-story-team" style={{ overflow: 'hidden' }}>
                 <div className="about-story-team-wrapper">
                     <div className="about-story">
                         <div className="about-story-section">
