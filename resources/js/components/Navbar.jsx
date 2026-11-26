@@ -71,11 +71,11 @@ export default function Navbar({ hours, onOpenContact, onNavigate, theme, onChan
                     <SquigglePillLink href="/about" label="About us" onClick={(e) => handleNav(e, '/about')} />
                 </nav>
 
-                {/* Center Wordmark Pill */}
+                {/* Center Wordmark (plain orange, no box — matches screenshot) */}
                 <a
                     href="/"
                     onClick={(e) => handleNav(e, '/')}
-                    className="pointer-events-auto inline-flex items-center px-4 py-1.5 rounded-full bg-white/90 backdrop-blur-sm border border-black/10 shadow-sm font-display text-xl md:text-2xl uppercase tracking-tight"
+                    className="pointer-events-auto inline-flex items-center font-display text-2xl md:text-3xl uppercase tracking-tight"
                     style={{ color: 'var(--brand-primary)' }}
                     aria-label="Studio Kinetix Home"
                 >
@@ -83,9 +83,9 @@ export default function Navbar({ hours, onOpenContact, onNavigate, theme, onChan
                 </a>
 
                 {/* Right Controls */}
-                <div className="flex items-center gap-3 pointer-events-auto">
-                    <span className="hidden lg:inline-block text-xs font-medium px-3 py-1.5 rounded-full bg-white/85 backdrop-blur-sm border border-black/10">
-                        {hours}
+                <div className="flex items-center gap-4 pointer-events-auto">
+                    <span className="hidden lg:inline-block text-xs font-medium leading-tight text-left" style={{ color: 'var(--brand-black)' }}>
+                        Monday–Friday<br />10:00 – 17:00
                     </span>
 
                     {/* Primary Color Switcher (Orange / Blue / Red / Green) */}

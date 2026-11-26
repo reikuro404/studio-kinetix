@@ -21,8 +21,12 @@ export default function HeroSection({ ready }) {
 
     useEffect(() => {
         const ctx = gsap.context(() => {
-            // 1. Initial hidden states for heading lines, pills, and side ribbon paths
-            gsap.set(pillRefs.current.filter(Boolean), { opacity: 0, scale: 0.4, y: 20, transformOrigin: 'center center' });
+            // 1. Initial hidden states (preserve CSS rotation on .hero-pill.one / two / three)
+            pillRefs.current.forEach((p, idx) => {
+                if (!p) return;
+                const baseRot = idx === 0 ? 3 : idx === 1 ? -7 : -5;
+                gsap.set(p, { opacity: 0, scale: 0.4, y: 20, rotation: baseRot, transformOrigin: 'center center' });
+            });
             gsap.set(pillTextRefs.current.filter(Boolean), { y: '105%', opacity: 0 });
             gsap.set('.hero-line-inner', { y: '115%', opacity: 0 });
 

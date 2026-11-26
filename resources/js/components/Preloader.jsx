@@ -23,7 +23,7 @@ export default function Preloader({ onComplete }) {
         const safetyTimer = setTimeout(() => {
             setVisible(false);
             onComplete?.();
-        }, 3800);
+        }, 5500);
 
         const ctx = gsap.context(() => {
             const svg = svgRef.current;
@@ -31,100 +31,110 @@ export default function Preloader({ onComplete }) {
             const wPath = wRef.current;
             const bg1 = bgPath1Ref.current;
             const bg2 = bgPath2Ref.current;
+            const letters = lettersRef.current.filter(Boolean);
 
-            // Setup background diagonal stroke curtains
+            // Background diagonal curtains
             [bg1, bg2].forEach((p) => {
                 if (!p) return;
                 const len = p.getTotalLength();
-                gsap.set(p, {
-                    strokeDasharray: len,
-                    strokeDashoffset: 0,
-                    strokeWidth: 2200,
-                });
+                gsap.set(p, { strokeDasharray: len, strokeDashoffset: 0, strokeWidth: 2400 });
             });
 
+            // Ribbon tracer (short 7% dash that travels into W)
+            let ribbonLen = 2500;
             if (ribbon) {
-                const len = ribbon.getTotalLength();
+                ribbonLen = ribbon.getTotalLength();
                 gsap.set(ribbon, {
-                    strokeDasharray: len,
-                    strokeDashoffset: len,
+                    strokeDasharray: `${ribbonLen * 0.07} ${ribbonLen}`,
+                    strokeDashoffset: ribbonLen * 0.07,
+                    strokeWidth: 0,
                 });
             }
 
             if (wPath) {
                 const lenW = wPath.getTotalLength();
-                gsap.set(wPath, {
-                    strokeDasharray: lenW,
-                    strokeDashoffset: lenW,
+                gsap.set(wPath, { strokeDasharray: lenW, strokeDashoffset: lenW, strokeWidth: 19 });
+            }
+
+            // Letters pop-in setup
+            letters.forEach((letter) => {
+                const bbox = letter.getBBox();
+                const cx = bbox.x + bbox.width / 2;
+                const cy = bbox.y + bbox.height / 2;
+                gsap.set(letter, {
+                    scale: 0,
+                    rotation: gsap.utils.random(-25, 25),
+                    strokeWidth: 6,
+                    svgOrigin: `${cx} ${cy}`,
                 });
-            }
-
-            gsap.set(lettersRef.current.filter(Boolean), {
-                scale: 0,
-                rotation: () => gsap.utils.random(-22, 22),
-                transformOrigin: 'center center',
-                force3D: true,
             });
 
-            if (svg) {
-                gsap.set(svg, { visibility: 'visible' });
-            }
+            if (svg) gsap.set(svg, { visibility: 'visible' });
 
-            const tl = gsap.timeline({
-                delay: 0.15,
-                onComplete: () => {
-                    clearTimeout(safetyTimer);
-                    setVisible(false);
-                    onComplete?.();
-                },
+            // Compute vertical center offset for Step D
+            const allContent = [wPath, ...letters].filter(Boolean);
+            let minY = Infinity;
+            let maxY = -Infinity;
+            allContent.forEach((p) => {
+                const b = p.getBBox();
+                if (b.y < minY) minY = b.y;
+                if (b.y + b.height > maxY) maxY = b.y + b.height;
             });
+            const svgRect = svg ? svg.getBoundingClientRect() : { height: 500 };
+            const scaleRatio = svgRect.height > 0 ? svgRect.height / 1004 : 1;
+            const offsetPx = ((minY + maxY) / 2 - 502) * scaleRatio;
 
-            // 1. Serpentine ribbon traces into W
+            const tl = gsap.timeline({ delay: 0.2 }).timeScale(1.25);
+
+            // Step A: Ribbon stroke grows and travels to W
             if (ribbon) {
-                tl.to(ribbon, { strokeDashoffset: 0, duration: 1.05, ease: 'power2.inOut' }, 0);
-            }
-            if (wPath) {
-                tl.to(wPath, { strokeDashoffset: 0, duration: 0.6, ease: 'power2.out' }, 0.35);
+                tl.to(ribbon, { strokeWidth: 19, duration: 0.9, ease: 'power2.in' }, 0)
+                    .to(ribbon, { strokeDashoffset: -ribbonLen * 0.4, duration: 1.5, ease: 'power1.inOut' }, 0);
             }
 
-            // 2. Letters T, O, 2, 6 pop in with spring
+            // Step B: W draws
+            if (wPath) {
+                tl.to(wPath, { strokeDashoffset: 0, duration: 0.9, ease: 'power2.out' }, '-=0.4');
+            }
+
+            // Step C: Ribbon departs
+            if (ribbon) {
+                tl.to(ribbon, { strokeDashoffset: -ribbonLen, duration: 0.9, ease: 'power2.inOut' }, '-=0.45')
+                    .to(ribbon, { strokeWidth: 0, duration: 0.45, ease: 'power2.in' }, '-=0.5');
+            }
+
+            // Step D: Shift SVG upward to center stacked mark
+            if (svg) {
+                tl.to(svg, { y: -offsetPx, duration: 0.7, ease: 'power2.inOut' }, '+=0.05');
+            }
+
+            // Step E: Letters T, O, 2, 6 pop in with back.out(3)
             tl.to(
-                lettersRef.current.filter(Boolean),
+                letters,
                 {
                     scale: 1,
                     rotation: 0,
                     duration: 0.55,
-                    stagger: 0.08,
-                    ease: 'back.out(1.7)',
-                    force3D: true,
+                    stagger: 0.09,
+                    ease: 'back.out(3)',
                 },
-                0.55
-            );
-
-            // 3. Logo scales out & diagonal background strokes retract to reveal page
-            tl.to(
-                logoWrapRef.current,
+                '-=0.2'
+            ).to(
+                letters,
                 {
-                    scale: 0.9,
-                    opacity: 0,
-                    duration: 0.35,
-                    ease: 'power2.in',
-                    force3D: true,
+                    strokeWidth: 0,
+                    duration: 0.55,
+                    stagger: 0.09,
+                    ease: 'power1.in',
                 },
-                1.65
+                '<'
             );
 
+            // Step F: Pink wipe -> Orange wipe -> Reveal page
+            tl.to(logoWrapRef.current, { opacity: 0, scale: 0.94, duration: 0.28, ease: 'power2.in' }, '+=0.15');
             if (bg2) {
                 const len2 = bg2.getTotalLength();
-                tl.to(
-                    bg2,
-                    {
-                        strokeDashoffset: len2,
-                        duration: 0.7,
-                        ease: 'power3.inOut',
-                    },
-                    1.75
-                );
+                tl.to(bg2, { strokeDashoffset: len2, duration: 0.6, ease: 'power3.inOut' }, '<0.05');
             }
             if (bg1) {
                 const len1 = bg1.getTotalLength();
@@ -132,10 +142,15 @@ export default function Preloader({ onComplete }) {
                     bg1,
                     {
                         strokeDashoffset: -len1,
-                        duration: 0.75,
+                        duration: 0.65,
                         ease: 'power3.inOut',
+                        onComplete: () => {
+                            clearTimeout(safetyTimer);
+                            setVisible(false);
+                            onComplete?.();
+                        },
                     },
-                    1.85
+                    '<0.1'
                 );
             }
         }, containerRef);
@@ -154,27 +169,26 @@ export default function Preloader({ onComplete }) {
             className="fixed inset-0 z-[99999] flex items-center justify-center overflow-hidden pointer-events-auto"
             aria-hidden="true"
         >
-            {/* Diagonal Curved SVG Background Strokes (exact two26.studio reveal) */}
             <div className="absolute inset-0 w-full h-full pointer-events-none">
                 <svg className="w-full h-full object-cover" viewBox="0 0 1500 1093" fill="none" preserveAspectRatio="none">
                     <path
                         ref={bgPath1Ref}
                         d="M1500 0C687.437 32.0206 767.477 1069.1 4.43459e-05 1093"
                         stroke="var(--brand-primary)"
-                        strokeWidth="2200"
+                        strokeWidth="2400"
                         strokeLinecap="round"
                     />
                     <path
                         ref={bgPath2Ref}
                         d="M0 0C812.563 32.0206 732.523 1069.1 1500 1093"
                         stroke="var(--brand-accent)"
-                        strokeWidth="2200"
+                        strokeWidth="2400"
                         strokeLinecap="round"
                     />
                 </svg>
             </div>
 
-            <div ref={logoWrapRef} className="relative z-10 w-full max-w-[780px] px-8 pointer-events-none will-change-transform">
+            <div ref={logoWrapRef} className="relative z-10 w-full max-w-[900px] px-8 pointer-events-none">
                 <svg
                     ref={svgRef}
                     className="w-full h-auto"
@@ -194,11 +208,13 @@ export default function Preloader({ onComplete }) {
                         ref={(el) => (lettersRef.current[2] = el)}
                         d="M583.585 844.138H719.842V877.476H549.228V854.833C549.228 804.451 588.266 780.388 628.391 758.33C645.026 748.972 660.741 740.032 672.11 729.337C683.144 718.977 688.16 708.282 688.16 694.579C688.16 665.252 665.088 657.231 639.341 657.231C599.3 657.231 582.582 678.955 582.582 717.974H549.228C549.228 660.239 580.575 623.81 639.341 623.81C684.147 623.81 721.513 645.868 721.513 694.579C721.513 744.042 682.475 766.017 644.691 787.406C610.669 806.122 588.6 820.409 583.585 844.138Z"
                         fill="var(--brand-primary)"
+                        stroke="var(--brand-primary)"
                     />
                     <path
                         ref={(el) => (lettersRef.current[3] = el)}
                         d="M837.373 877.81C772.588 877.81 750.519 823.417 750.519 765.014C750.519 702.934 764.563 623.81 842.054 623.81C879.086 623.81 913.86 645.2 913.86 685.221H880.423C880.423 680.626 878.751 657.231 842.054 657.231C801.678 657.231 790.644 692.574 786.297 726.329C796.997 718.057 811.124 711.206 829.515 708.867C878.835 702.517 921.217 737.943 923.725 787.573C926.4 839.627 889.201 877.81 837.373 877.81ZM890.454 792.753C890.454 760.669 873.067 741.369 844.06 741.369C825.837 741.369 810.957 747.468 800.424 758.664C786.715 773.035 784.207 795.009 791.564 813.474C798.753 831.856 812.378 844.473 837.373 844.473C869.055 844.473 890.454 823.751 890.454 792.753Z"
                         fill="var(--brand-primary)"
+                        stroke="var(--brand-primary)"
                     />
                     <path
                         ref={wRef}
@@ -212,11 +228,13 @@ export default function Preloader({ onComplete }) {
                         ref={(el) => (lettersRef.current[0] = el)}
                         d="M544.502 455.623H637.923V472.02H600.418V592.087H582.189V472.02H544.502V455.623Z"
                         fill="var(--brand-primary)"
+                        stroke="var(--brand-primary)"
                     />
                     <path
                         ref={(el) => (lettersRef.current[1] = el)}
                         d="M811.277 523.856C811.277 489.284 828.047 453.984 867.694 453.984C906.474 453.984 924.156 488.373 924.156 523.856C924.156 558.427 907.386 593.728 867.694 593.728C828.047 593.728 811.277 558.427 811.277 523.856ZM867.694 575.554C896.13 575.554 905.928 548.088 905.928 523.856C905.928 499.669 896.13 472.203 867.694 472.203C838.938 472.203 829.459 499.305 829.459 523.856C829.459 548.27 838.938 575.554 867.694 575.554Z"
                         fill="var(--brand-primary)"
+                        stroke="var(--brand-primary)"
                     />
                 </svg>
             </div>
