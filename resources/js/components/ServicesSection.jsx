@@ -54,10 +54,13 @@ export default function ServicesSection({ services }) {
 
             svgBoxRefs.current.forEach((box) => {
                 if (!box) return;
-                const naturalWidth =
-                    box.getBoundingClientRect().width ||
-                    parseFloat(getComputedStyle(box).width) ||
-                    116;
+                // Force layout before collapsing so we capture the CSS-specified width
+                box.style.visibility = 'hidden';
+                const rect = box.getBoundingClientRect();
+                const computed = parseFloat(getComputedStyle(box).width);
+                // 7.25em at 16px root = ~116px; use whichever is larger & valid
+                const naturalWidth = Math.max(rect.width, computed, 116);
+                box.style.visibility = '';
                 box.dataset.targetWidth = String(naturalWidth);
                 gsap.set(box, { width: 0, scale: 0, opacity: 0, overflow: 'hidden', margin: '0px' });
             });

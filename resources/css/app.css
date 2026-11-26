@@ -1,83 +1,12 @@
-@import "tailwindcss";
-@import "./two26-layout.css";
+@import 'two26-layout.css';
 
-@font-face {
-    font-family: "MDNichrome";
-    src: url("/assets/fonts/MDNichromeTest-Bold.woff") format("woff");
-    font-weight: 700;
-    font-style: normal;
-    font-display: swap;
-}
+/* ============================================================
+   STUDIO KINETIX — APP-LEVEL OVERRIDES
+   Always loaded after two26-layout.css so these win.
+   ============================================================ */
 
-@font-face {
-    font-family: "MDNichromeDark";
-    src: url("/assets/fonts/MDNichromeTest-Dark.woff") format("woff");
-    font-weight: 800;
-    font-style: normal;
-    font-display: swap;
-}
-
-@font-face {
-    font-family: "NeueMontreal";
-    src: url("/assets/fonts/NeueMontreal-Regular.otf") format("opentype");
-    font-weight: 400;
-    font-style: normal;
-    font-display: swap;
-}
-
-@font-face {
-    font-family: "NeueMontreal";
-    src: url("/assets/fonts/NeueMontreal-Medium.otf") format("opentype");
-    font-weight: 500;
-    font-style: normal;
-    font-display: swap;
-}
-
-:root {
-    --brand-primary: #ff5400;
-    --brand-primary-dark: #d94600;
-    --brand-white: #fdf8f5;
-    --brand-secondary: #f8eee8;
-    --brand-accent: #f9e2e1;
-    --brand-black: #000000;
-    --font-display: "MDNichromeDark", "MDNichrome", system-ui, sans-serif;
-    --font-body: "NeueMontreal", system-ui, -apple-system, sans-serif;
-}
-
-:root[data-theme="blue"] {
-    --brand-primary: #0047FF;
-    --brand-primary-dark: #0035C5;
-    --brand-white: #F7F8FA;
-    --brand-secondary: #EBEEF5;
-    --brand-accent: #DCE6FF;
-    --brand-black: #0A0B0E;
-}
-
-:root[data-theme="red"] {
-    --brand-primary: #E11D2E;
-    --brand-primary-dark: #B91322;
-    --brand-white: #F9F8F6;
-    --brand-secondary: #F2ECE9;
-    --brand-accent: #FCE2E4;
-    --brand-black: #0B0A0A;
-}
-
-:root[data-theme="green"] {
-    --brand-primary: #059669;
-    --brand-primary-dark: #047857;
-    --brand-white: #F6F9F7;
-    --brand-secondary: #E8F1EC;
-    --brand-accent: #D1FAE5;
-    --brand-black: #090D0B;
-}
-
-* {
-    -webkit-tap-highlight-color: transparent;
-    box-sizing: border-box;
-}
-
-html,
-body {
+/* ── Root resets ─────────────────────────────────────────── */
+html, body {
     position: static !important;
     overflow-x: hidden !important;
     overflow-y: auto !important;
@@ -91,84 +20,221 @@ body {
     -moz-osx-font-smoothing: grayscale;
 }
 
-.font-display {
-    font-family: var(--font-display);
+.font-display { font-family: var(--font-display); }
+.font-body    { font-family: var(--font-body); }
+
+/* ── Custom scrollbar ─────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--brand-white); }
+::-webkit-scrollbar-thumb { background: var(--brand-primary); border-radius: 3px; }
+
+/* ══════════════════════════════════════════════════════════
+   NAVBAR
+   ══════════════════════════════════════════════════════════ */
+
+/* Squiggle pill nav links: exact two26 style */
+.nav-pill-link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    padding: 0.55em 1.25em;
+    border-radius: 999px;
+    background: #ffffff;
+    border: 1.5px solid rgba(0,0,0,0.12);
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--brand-black) !important;
+    text-decoration: none;
+    overflow: visible !important;
+    cursor: pointer;
+    transition: transform 0.25s cubic-bezier(0.16,1,0.3,1);
+    white-space: nowrap;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+.nav-pill-link:hover { transform: scale(1.04); }
+.nav-pill-link svg {
+    position: absolute;
+    inset: -6px;
+    width: calc(100% + 12px);
+    height: calc(100% + 12px);
+    pointer-events: none;
+    overflow: visible !important;
 }
 
-.font-body {
-    font-family: var(--font-body);
+/* CTA "Let's Talk" pill */
+.nav-cta-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.4rem 0.4rem 1.1rem;
+    border-radius: 999px;
+    background: var(--brand-black);
+    color: #fff !important;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.25s cubic-bezier(0.16,1,0.3,1), box-shadow 0.25s;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.25);
+    white-space: nowrap;
 }
-
-/* Marquee hardware acceleration */
-.marquee-track {
-    display: flex;
-    width: max-content;
-    will-change: transform;
-}
-
-/* Custom scrollbar */
-::-webkit-scrollbar {
-    width: 6px;
-}
-::-webkit-scrollbar-track {
-    background: var(--brand-white);
-}
-::-webkit-scrollbar-thumb {
+.nav-cta-btn:hover { transform: scale(1.04); box-shadow: 0 4px 18px rgba(0,0,0,0.35); }
+.nav-cta-arrow {
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 50%;
     background: var(--brand-primary);
-    border-radius: 3px;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s cubic-bezier(0.16,1,0.3,1), background 0.3s;
+    flex-shrink: 0;
+}
+.nav-cta-btn:hover .nav-cta-arrow { transform: rotate(45deg); background: #ff7a30; }
+
+/* ══════════════════════════════════════════════════════════
+   HERO — fix Webflow JS opacity hook + z-stack
+   ══════════════════════════════════════════════════════════ */
+
+/* two26-layout.css ends with: .heading, .section-hero h1 { opacity:0 }
+   We override here — GSAP handles reveal via .hero-line-inner */
+.section-hero h1.heading,
+.heading,
+.section-hero [data-hero-heading] {
+    opacity: 1 !important;
 }
 
-/* Project card dual-image hover */
+/* Keep line-inner hidden initially (GSAP sets y/opacity via JS) */
+.hero-line-inner {
+    display: block;
+}
+
+/* z-index stack */
+.hero-text {
+    position: relative !important;
+    z-index: 150 !important;
+}
+.hero-video-loop,
+.hero-video-bg {
+    z-index: 10 !important;
+}
+.hero-path-svg-left,
+.hero-path-svg-right {
+    z-index: 5 !important;
+}
+
+/* ══════════════════════════════════════════════════════════
+   ABOUT SECTION — prevent pill overlap
+   ══════════════════════════════════════════════════════════ */
+
+.about-pinned { padding-top: 5em; }
+
+/* Pills in about section — fix z-index so they layer above text */
+.about-pill { z-index: 20 !important; }
+
+/* ══════════════════════════════════════════════════════════
+   PROJECTS SECTION — pills positioning fix
+   ══════════════════════════════════════════════════════════ */
+
+/* "WE COULD KEEP GOING" section pills must not overlap heading */
+.projects-end .projects-end-pill {
+    position: absolute;
+    pointer-events: none;
+}
+
+/* ══════════════════════════════════════════════════════════
+   PROJECT CARDS — hover effects
+   ══════════════════════════════════════════════════════════ */
+
 .project-card .img-hover {
     opacity: 0;
     transform: scale(1.06);
-    transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1),
-        transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: opacity 0.45s cubic-bezier(0.16,1,0.3,1),
+                transform 0.65s cubic-bezier(0.16,1,0.3,1);
 }
 .project-card:hover .img-hover {
     opacity: 1;
     transform: scale(1);
 }
 .project-card .img-primary {
-    transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: transform 0.65s cubic-bezier(0.16,1,0.3,1);
 }
-.project-card:hover .img-primary {
-    transform: scale(1.04);
+.project-card:hover .img-primary { transform: scale(1.04); }
+
+/* Arrow icon on project card hover */
+.project-card .project-card-arrow {
+    transition: transform 0.3s cubic-bezier(0.16,1,0.3,1), background 0.3s;
+}
+.project-card:hover .project-card-arrow {
+    transform: rotate(45deg) scale(1.1);
+    background: var(--brand-primary) !important;
 }
 
-/* Z-index & Pinning Clearances + Responsive Guards */
-.hero-text {
-    position: relative !important;
-    z-index: 150 !important;
-}
+/* ══════════════════════════════════════════════════════════
+   CTA "SEE ALL PROJECTS" button
+   ══════════════════════════════════════════════════════════ */
 
-.hero-video-loop {
-    position: relative !important;
-    z-index: 10 !important;
-}
-
-.hero-video-bg {
-    z-index: 10 !important;
-}
-
-.about-pinned {
-    padding-top: 5em;
-}
-
-/* CTA Button Hover Effects */
 .project-btn {
-    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.3s ease;
+    transition: transform 0.3s cubic-bezier(0.16,1,0.3,1), background-color 0.3s;
 }
 .project-btn:hover {
     transform: scale(1.04);
     background-color: var(--brand-primary) !important;
+    color: #fff !important;
 }
 .project-btn:hover .cta-btn-arrow {
     background-color: var(--brand-black) !important;
     transform: rotate(45deg);
 }
 .cta-btn-arrow {
-    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.3s ease;
+    transition: transform 0.3s cubic-bezier(0.16,1,0.3,1), background-color 0.3s;
+}
+
+/* ══════════════════════════════════════════════════════════
+   SERVICES — Lottie icon sizing & service block hover
+   ══════════════════════════════════════════════════════════ */
+
+/* Ensure the cross/icon in services ribbon is large enough */
+.service-svg,
+.service-icon-wrap {
+    width: 7.25em !important;
+    height: 7.25em !important;
+    min-width: 7.25em;
+    flex-shrink: 0;
+}
+
+/* Service block text hover */
+.service-block {
+    transition: opacity 0.25s;
+}
+.service-block:hover { opacity: 0.85; }
+
+.service-block .service-name {
+    transition: letter-spacing 0.35s cubic-bezier(0.16,1,0.3,1);
+}
+.service-block:hover .service-name { letter-spacing: 0.04em; }
+
+/* ══════════════════════════════════════════════════════════
+   MARQUEE hardware acceleration
+   ══════════════════════════════════════════════════════════ */
+
+.marquee-track {
+    display: flex;
+    width: max-content;
+    will-change: transform;
+}
+
+/* ══════════════════════════════════════════════════════════
+   MOBILE RESPONSIVE
+   ══════════════════════════════════════════════════════════ */
+
+@media (max-width: 991px) {
+    .service-svg, .service-icon-wrap {
+        width: 5em !important;
+        height: 5em !important;
+        min-width: 5em;
+    }
 }
 
 @media (max-width: 767px) {
@@ -176,22 +242,19 @@ body {
         padding-top: 5.5em !important;
     }
     .hero-text h1.heading {
-        font-size: 4.5em !important;
+        font-size: clamp(2.8rem, 11vw, 5rem) !important;
         line-height: 0.9 !important;
     }
-    .hero-pill.one {
-        left: 4% !important;
-        top: 38% !important;
-    }
-    .hero-pill.two {
-        right: 8% !important;
-        top: 6% !important;
-    }
-    .hero-pill.three {
-        right: 6% !important;
-        bottom: -14% !important;
-    }
-    .projects-end-para {
-        font-size: 2.8em !important;
+    .hero-pill.one  { left: 4% !important;  top: 38% !important; }
+    .hero-pill.two  { right: 8% !important; top: 6% !important; }
+    .hero-pill.three{ right: 6% !important; bottom: -14% !important; }
+    .projects-end-para { font-size: 2.8em !important; }
+    .about-para { font-size: clamp(1.6rem, 7vw, 2.5rem) !important; }
+    .nav-cta-btn span:first-child { display: none; }
+}
+
+@media (max-width: 479px) {
+    .hero-text h1.heading {
+        font-size: clamp(2.4rem, 10vw, 3rem) !important;
     }
 }
