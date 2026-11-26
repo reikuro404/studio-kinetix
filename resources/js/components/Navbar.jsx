@@ -3,7 +3,8 @@ import gsap from 'gsap';
 import { ArrowUpRight, Menu, X } from 'lucide-react';
 
 /* ------------------------------------------------------------------ *
- *  SquigglePillLink — white pill with animated squiggle on hover      *
+ *  SquigglePillLink                                                   *
+ *  White pill with a thin squiggle outline that draws in on hover.   *
  * ------------------------------------------------------------------ */
 function SquigglePillLink({ href, label, onClick }) {
     const pathRef = useRef(null);
@@ -14,6 +15,7 @@ function SquigglePillLink({ href, label, onClick }) {
         if (!p) return;
         const len = p.getTotalLength();
         lengthRef.current = len;
+        // Start fully hidden
         gsap.set(p, { strokeDasharray: len, strokeDashoffset: len });
     }, []);
 
@@ -43,21 +45,54 @@ function SquigglePillLink({ href, label, onClick }) {
             onClick={onClick}
             onMouseEnter={onEnter}
             onMouseLeave={onLeave}
-            className="nav-pill-link"
+            style={{
+                position: 'relative',
+                display: 'inline-flex',
+                alignItems: 'center',
+                padding: '0.52em 1.2em',
+                borderRadius: 999,
+                background: '#ffffff',
+                border: '1.5px solid rgba(0,0,0,0.12)',
+                fontSize: '0.875rem',
+                fontWeight: 500,
+                color: '#000000',
+                textDecoration: 'none',
+                whiteSpace: 'nowrap',
+                boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
+                cursor: 'pointer',
+                transition: 'transform 0.25s cubic-bezier(0.16,1,0.3,1)',
+                overflow: 'visible',
+            }}
+            onMouseOver={e => e.currentTarget.style.transform = 'scale(1.04)'}
+            onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
         >
             <span style={{ position: 'relative', zIndex: 2 }}>{label}</span>
-            {/* SVG sits OUTSIDE pill bounds (overflow: visible) */}
+
+            {/*
+              SVG overflows the pill by ~8px on all sides.
+              Uses a thin strokeWidth (3) so it only shows as a squiggle outline,
+              not a filled blob. The path is drawn fully hidden (strokeDashoffset=len)
+              and animates to 0 on hover.
+            */}
             <svg
-                viewBox="0 0 120 48"
+                viewBox="0 0 100 36"
                 fill="none"
-                preserveAspectRatio="none"
                 aria-hidden="true"
+                style={{
+                    position: 'absolute',
+                    top: -8,
+                    left: -8,
+                    width: 'calc(100% + 16px)',
+                    height: 'calc(100% + 16px)',
+                    pointerEvents: 'none',
+                    overflow: 'visible',
+                }}
             >
                 <path
                     ref={pathRef}
-                    d="M4 28C4 28 10 6 22 8C36 10 14 27 20 36C30 50 36 2 52 10C64 16 42 34 54 40C68 47 76 1 90 12C98 18 82 38 92 38C97 38 104 24 116 24"
+                    d="M4 20C4 20 10 4 20 5.5C32 7.3 16 20 22 27C30 36 36 1 50 8C60 13 44 27 54 32C64 37 70 1 82 10C89 15 76 30 85 30C89 30 95 20 100 20"
                     stroke="var(--brand-primary)"
-                    strokeWidth="18"
+                    strokeWidth="3"
                     strokeLinecap="round"
                     fill="none"
                 />
@@ -69,7 +104,7 @@ function SquigglePillLink({ href, label, onClick }) {
 /* ------------------------------------------------------------------ *
  *  Navbar                                                             *
  * ------------------------------------------------------------------ */
-export default function Navbar({ hours, onOpenContact, onNavigate, theme, onChangeTheme }) {
+export default function Navbar({ hours, onOpenContact, onNavigate }) {
     const [mobileOpen, setMobileOpen] = useState(false);
 
     const handleNav = (e, path) => {
@@ -77,13 +112,6 @@ export default function Navbar({ hours, onOpenContact, onNavigate, theme, onChan
         setMobileOpen(false);
         onNavigate?.(path);
     };
-
-    const themes = [
-        { id: 'orange', color: '#ff5400', label: 'Orange' },
-        { id: 'blue',   color: '#0047FF', label: 'Blue'   },
-        { id: 'red',    color: '#E11D2E', label: 'Red'    },
-        { id: 'green',  color: '#059669', label: 'Green'  },
-    ];
 
     return (
         <header style={{
@@ -103,92 +131,97 @@ export default function Navbar({ hours, onOpenContact, onNavigate, theme, onChan
                 justifyContent: 'space-between',
                 gap: '1rem',
             }}>
-                {/* ── Left nav pills ── */}
-                <nav style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', pointerEvents: 'auto' }}
-                     className="hidden-mobile">
+
+                {/* ── Left: nav pills ── */}
+                <nav style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    pointerEvents: 'auto',
+                }} className="nav-pills-desktop">
                     <SquigglePillLink href="/work"  label="Work"     onClick={(e) => handleNav(e, '/work')} />
                     <SquigglePillLink href="/about" label="About us" onClick={(e) => handleNav(e, '/about')} />
                 </nav>
 
-                {/* ── Centre wordmark ── */}
+                {/* ── Centre: wordmark — matches two26 font style ── */}
                 <a
                     href="/"
                     onClick={(e) => handleNav(e, '/')}
                     style={{
                         pointerEvents: 'auto',
                         fontFamily: 'var(--font-display)',
-                        fontSize: 'clamp(1.3rem, 2.5vw, 1.8rem)',
-                        fontWeight: 800,
+                        fontSize: 'clamp(1.4rem, 2.2vw, 1.75rem)',
+                        fontWeight: 900,
                         textTransform: 'uppercase',
-                        letterSpacing: '-0.02em',
+                        letterSpacing: '-0.01em',
                         color: 'var(--brand-primary)',
                         textDecoration: 'none',
                         lineHeight: 1,
+                        userSelect: 'none',
                     }}
                     aria-label="Studio Kinetix"
                 >
                     KINETIX
                 </a>
 
-                {/* ── Right controls ── */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', pointerEvents: 'auto' }}>
+                {/* ── Right: hours + CTA ── */}
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '1rem',
+                    pointerEvents: 'auto',
+                }}>
                     {/* Hours */}
                     <span style={{
-                        fontSize: '0.72rem',
+                        fontSize: '0.7rem',
                         fontWeight: 500,
-                        lineHeight: 1.4,
+                        lineHeight: 1.5,
                         color: 'var(--brand-black)',
                         whiteSpace: 'nowrap',
-                    }} className="hidden-tablet">
+                    }} className="hours-desktop">
                         Monday–Friday<br />10:00 – 17:00
                     </span>
-
-                    {/* Theme dots */}
-                    <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.35rem',
-                        padding: '0.4rem 0.65rem',
-                        borderRadius: 999,
-                        border: '1.5px solid rgba(0,0,0,0.12)',
-                        background: 'rgba(255,255,255,0.92)',
-                        boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
-                    }} className="hidden-mobile">
-                        {themes.map((t) => (
-                            <button
-                                key={t.id}
-                                type="button"
-                                onClick={() => onChangeTheme(t.id)}
-                                title={t.label}
-                                aria-label={`Switch to ${t.label}`}
-                                style={{
-                                    width: '0.85rem',
-                                    height: '0.85rem',
-                                    borderRadius: '50%',
-                                    background: t.color,
-                                    border: 'none',
-                                    cursor: 'pointer',
-                                    padding: 0,
-                                    transform: theme === t.id ? 'scale(1.3)' : 'scale(1)',
-                                    outline: theme === t.id ? '2px solid rgba(0,0,0,0.3)' : 'none',
-                                    outlineOffset: 2,
-                                    transition: 'transform 0.2s, outline 0.2s',
-                                    opacity: theme === t.id ? 1 : 0.6,
-                                }}
-                            />
-                        ))}
-                    </div>
 
                     {/* CTA: Let's Talk */}
                     <button
                         type="button"
                         onClick={onOpenContact}
-                        className="nav-cta-btn hidden-mobile"
+                        className="nav-cta-btn"
                         aria-label="Let's Talk"
+                        style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.45rem',
+                            padding: '0.38rem 0.38rem 0.38rem 1rem',
+                            borderRadius: 999,
+                            background: 'var(--brand-black)',
+                            border: 'none',
+                            color: '#fff',
+                            fontSize: '0.875rem',
+                            fontWeight: 500,
+                            cursor: 'pointer',
+                            boxShadow: '0 2px 10px rgba(0,0,0,0.25)',
+                            whiteSpace: 'nowrap',
+                            transition: 'transform 0.25s cubic-bezier(0.16,1,0.3,1), box-shadow 0.25s',
+                        }}
+                        onMouseOver={e => { e.currentTarget.style.transform = 'scale(1.04)'; e.currentTarget.style.boxShadow = '0 4px 18px rgba(0,0,0,0.35)'; }}
+                        onMouseOut={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = '0 2px 10px rgba(0,0,0,0.25)'; }}
                     >
-                        <span style={{ color: '#fff' }}>Let's Talk</span>
-                        <span className="nav-cta-arrow">
-                            <ArrowUpRight size={16} color="#fff" />
+                        <span style={{ color: '#fff' }} className="cta-label-desktop">Let's Talk</span>
+                        <span style={{
+                            width: '1.75rem',
+                            height: '1.75rem',
+                            borderRadius: '50%',
+                            background: 'var(--brand-primary)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            flexShrink: 0,
+                            transition: 'transform 0.3s cubic-bezier(0.16,1,0.3,1)',
+                        }}
+                            className="nav-cta-arrow"
+                        >
+                            <ArrowUpRight size={15} color="#fff" />
                         </span>
                     </button>
 
@@ -196,7 +229,7 @@ export default function Navbar({ hours, onOpenContact, onNavigate, theme, onChan
                     <button
                         type="button"
                         onClick={() => setMobileOpen(!mobileOpen)}
-                        className="show-mobile"
+                        className="nav-hamburger"
                         style={{
                             width: 40,
                             height: 40,
@@ -204,7 +237,7 @@ export default function Navbar({ hours, onOpenContact, onNavigate, theme, onChan
                             border: '2px solid var(--brand-primary)',
                             background: 'var(--brand-accent)',
                             color: 'var(--brand-primary)',
-                            display: 'flex',
+                            display: 'none',
                             alignItems: 'center',
                             justifyContent: 'center',
                             cursor: 'pointer',
@@ -265,21 +298,23 @@ export default function Navbar({ hours, onOpenContact, onNavigate, theme, onChan
                 </div>
             )}
 
-            {/* Responsive utility styles */}
+            {/* Responsive rules injected inline so no Tailwind conflicts */}
             <style>{`
-                @media (min-width: 768px) {
-                    .hidden-mobile { display: flex !important; }
-                    .show-mobile   { display: none !important; }
-                }
                 @media (max-width: 767px) {
-                    .hidden-mobile  { display: none !important; }
-                    .show-mobile    { display: flex !important; }
+                    .nav-pills-desktop { display: none !important; }
+                    .hours-desktop     { display: none !important; }
+                    .cta-label-desktop { display: none !important; }
+                    .nav-hamburger     { display: flex !important; }
                 }
-                @media (min-width: 992px) {
-                    .hidden-tablet { display: block !important; }
+                @media (min-width: 768px) {
+                    .nav-hamburger { display: none !important; }
                 }
-                @media (max-width: 991px) {
-                    .hidden-tablet { display: none !important; }
+                @media (max-width: 1023px) {
+                    .hours-desktop { display: none !important; }
+                }
+                /* Arrow rotates on CTA hover */
+                .nav-cta-btn:hover .nav-cta-arrow {
+                    transform: rotate(45deg) !important;
                 }
             `}</style>
         </header>

@@ -36,16 +36,7 @@ function App() {
     }));
     const [ready, setReady] = useState(false);
     const [contactOpen, setContactOpen] = useState(false);
-    const [theme, setTheme] = useState(() => localStorage.getItem('kinetix_theme') || 'orange'); // orange | blue | red | green
-
-    useEffect(() => {
-        localStorage.setItem('kinetix_theme', theme);
-        if (theme === 'orange') {
-            document.documentElement.removeAttribute('data-theme');
-        } else {
-            document.documentElement.setAttribute('data-theme', theme);
-        }
-    }, [theme]);
+    // Theme locked to orange — color switcher removed
 
     // Sync Lenis smooth scroll with GSAP ticker for 60-120 FPS scroll animations
     useEffect(() => {
@@ -111,8 +102,6 @@ function App() {
                 onOpenContact={() => setContactOpen(true)}
                 onNavigate={navigate}
                 currentPage={route.page}
-                theme={theme}
-                onChangeTheme={setTheme}
             />
 
             <main className="flex-1">
