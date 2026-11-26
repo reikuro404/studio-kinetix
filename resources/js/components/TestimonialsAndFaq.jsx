@@ -14,60 +14,6 @@ export default function TestimonialsAndFaq({ testimonials, faqs }) {
     const arrowRef = useRef(null);
     const isAnimatingRef = useRef(false);
     const arrowDirRef = useRef(0);
-    const faqRefs = useRef([]);
-    const prevFaqRef = useRef(0);
-
-    // Smooth GSAP FAQ accordion open/close transitions
-    useEffect(() => {
-        const openWidth = () => (window.innerWidth >= 992 ? '50%' : '75%');
-
-        faqRefs.current.forEach((el, idx) => {
-            if (!el) return;
-            const qBlock = el.querySelector('.question-block');
-            const aBlock = el.querySelector('.faq-block-btm');
-            const logo = el.querySelector('.faq-logo');
-            const answerText = el.querySelector('.faq-answer');
-            if (!qBlock || !aBlock) return;
-
-            const isOpen = openFaq === idx;
-            const wasOpen = prevFaqRef.current === idx;
-
-            if (isOpen && !wasOpen) {
-                gsap.killTweensOf([qBlock, aBlock, logo, answerText]);
-                gsap.set(aBlock, { display: 'flex', overflow: 'hidden' });
-                gsap.to(qBlock, { width: openWidth(), borderWidth: '1px', duration: 0.48, ease: 'power3.out' });
-                gsap.fromTo(
-                    aBlock,
-                    { height: 0, opacity: 0, scale: 0.85 },
-                    {
-                        height: 'auto',
-                        opacity: 1,
-                        scale: 1,
-                        duration: 0.5,
-                        ease: 'power3.out',
-                        onComplete: () => gsap.set(aBlock, { overflow: 'visible' }),
-                    }
-                );
-                if (logo) gsap.fromTo(logo, { scale: 0 }, { scale: 1, duration: 0.45, delay: 0.12, ease: 'back.out(2)' });
-                if (answerText) gsap.fromTo(answerText, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.4, delay: 0.08, ease: 'power2.out' });
-            } else if (!isOpen && wasOpen) {
-                gsap.killTweensOf([qBlock, aBlock, logo, answerText]);
-                gsap.set(aBlock, { overflow: 'hidden' });
-                if (logo) gsap.to(logo, { scale: 0, duration: 0.2, ease: 'power2.in' });
-                gsap.to(qBlock, { width: '100%', borderWidth: '0px', duration: 0.42, ease: 'power3.inOut' });
-                gsap.to(aBlock, {
-                    height: 0,
-                    opacity: 0,
-                    scale: 0.9,
-                    duration: 0.36,
-                    ease: 'power3.inOut',
-                    onComplete: () => gsap.set(aBlock, { display: 'none' }),
-                });
-            }
-        });
-
-        prevFaqRef.current = openFaq;
-    }, [openFaq]);
 
     const totalCards = testimonials.length;
 
@@ -289,83 +235,67 @@ export default function TestimonialsAndFaq({ testimonials, faqs }) {
                 </div>
             </section>
 
-            {/* Exact two26.studio 2-Column Chat-Bubble FAQ + Sleeping Cat */}
-            <section className="section-faq">
-                <div className="section-faq-wrapper">
-                    <div className="faq-left">
-                        <div className="section-faq-header">
-                            <div className="about-text">Frequently Asked Questions</div>
-                            <div className="section-heading-wrapper">
-                                <MagneticHeading className="section-heading left-align">
-                                    THINGS YOU MIGHT ASK
-                                </MagneticHeading>
-                            </div>
-                        </div>
-                        <div className="cat-svg">
-                            <img
-                                src="/assets/media/faq-cat.svg"
-                                alt="Sleeping studio cat"
-                                className="w-full h-auto block select-none"
-                                loading="lazy"
-                            />
-                        </div>
+            {/* Chat-Bubble Split FAQ Accordion (exact two26.studio style) */}
+            <section className="section-faq py-20 md:py-28 px-5 md:px-10 max-w-[1440px] mx-auto">
+                <div className="section-projects-header mb-12">
+                    <div className="section-about-text">Frequently Asked Questions</div>
+                    <div className="section-heading-wrapper">
+                        <MagneticHeading className="section-heading">
+                            THINGS YOU MIGHT ASK
+                        </MagneticHeading>
                     </div>
+                </div>
 
-                    <div className="faq-right">
-                        <div className="faq-list-wrapper">
-                            <div role="list" className="faq-list">
-                                {faqs.map((faq, idx) => {
-                                    const isOpen = openFaq === idx;
-                                    return (
-                                        <div
-                                            key={idx}
-                                            ref={(el) => (faqRefs.current[idx] = el)}
-                                            role="listitem"
-                                            className={`faq-item ${isOpen ? 'is-open' : ''}`}
-                                        >
-                                            <div className="faq-block">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setOpenFaq(isOpen ? -1 : idx)}
-                                                    className="question-block text-left cursor-pointer"
-                                                    style={{
-                                                        width: idx === 0 && prevFaqRef.current === 0 ? 'min(100%, 26em)' : undefined,
-                                                        borderWidth: idx === 0 && prevFaqRef.current === 0 ? '1px' : undefined,
-                                                        borderStyle: 'solid',
-                                                        borderColor: 'var(--brand-primary)',
-                                                    }}
-                                                >
-                                                    <div className="faq-ques">{faq.q}</div>
-                                                </button>
+                <div className="space-y-4">
+                    {faqs.map((faq, idx) => {
+                        const isOpen = openFaq === idx;
+                        return (
+                            <div
+                                key={idx}
+                                className="border-b pb-4"
+                                style={{ borderColor: 'color-mix(in srgb, var(--brand-black) 10%, transparent)' }}
+                            >
+                                <button
+                                    type="button"
+                                    onClick={() => setOpenFaq(isOpen ? -1 : idx)}
+                                    className={`flex items-center justify-between gap-4 text-left cursor-pointer px-5 py-4 rounded-2xl transition-all duration-500 ease-out ${
+                                        isOpen ? 'w-[85%] lg:w-[52%]' : 'w-full'
+                                    }`}
+                                    style={{
+                                        borderWidth: isOpen ? '1px' : '0px',
+                                        borderStyle: 'solid',
+                                        borderColor: 'var(--brand-primary)',
+                                        backgroundColor: isOpen ? 'var(--brand-accent)' : 'transparent',
+                                    }}
+                                >
+                                    <span className="text-lg md:text-xl font-medium tracking-tight">{faq.q}</span>
+                                    <span
+                                        className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-transform duration-300"
+                                        style={{
+                                            backgroundColor: isOpen ? 'var(--brand-primary)' : 'var(--brand-secondary)',
+                                            color: isOpen ? '#FFFFFF' : 'var(--brand-black)',
+                                            transform: isOpen ? 'rotate(45deg)' : 'rotate(0deg)',
+                                        }}
+                                    >
+                                        <Plus className="w-4 h-4" />
+                                    </span>
+                                </button>
 
-                                                <div
-                                                    className="faq-block-btm"
-                                                    style={{
-                                                        display: idx === 0 ? 'flex' : 'none',
-                                                        transformOrigin: 'right bottom',
-                                                    }}
-                                                >
-                                                    <div className="answer-block">
-                                                        <p className="faq-answer">{faq.a}</p>
-                                                    </div>
-                                                    <div className="faq-logo">
-                                                        <div className="faq-logo-svg">
-                                                            <span
-                                                                className="font-display text-sm font-extrabold tracking-tight"
-                                                                style={{ color: '#EBEAE6' }}
-                                                            >
-                                                                KX
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
+                                <div
+                                    className={`flex justify-end transition-all duration-500 ease-out origin-bottom-right ${
+                                        isOpen ? 'opacity-100 scale-100 mt-3 max-h-96' : 'opacity-0 scale-75 max-h-0 overflow-hidden'
+                                    }`}
+                                >
+                                    <div
+                                        className="w-full md:w-[54%] p-5 md:p-6 rounded-2xl text-white"
+                                        style={{ backgroundColor: 'var(--brand-primary)' }}
+                                    >
+                                        <p className="text-sm md:text-base leading-relaxed">{faq.a}</p>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    </div>
+                        );
+                    })}
                 </div>
             </section>
         </div>
