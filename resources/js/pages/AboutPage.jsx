@@ -81,10 +81,12 @@ function CapabilityPill({ label }) {
     );
 }
 
-export default function AboutPage({ about }) {
+export default function AboutPage({ about, ready = true }) {
     const pageRef = useRef(null);
     const heroLineRef = useRef(null);
     const heroIllusRef = useRef(null);
+    const pillTwoRef = useRef(null);
+    const pillOneRef = useRef(null);
     const bodyPathRef = useRef(null);
     const moodWrapperRef = useRef(null);
     const moodTrackRef = useRef(null);
@@ -97,35 +99,17 @@ export default function AboutPage({ about }) {
     const values = about.values || [];
     const capabilities = about.capabilities || [];
 
+    // 1. Initial hidden states + scroll-triggered sections
     useEffect(() => {
         const ctx = gsap.context(() => {
-            // 1. About Hero Entrance (masked lines + floating pills + SVG line draw)
-            gsap.fromTo(
-                '.about-hero-line',
-                { y: '115%', opacity: 0 },
-                { y: '0%', opacity: 1, duration: 0.8, stagger: 0.12, ease: 'back.out(1.4)', force3D: true }
-            );
-            gsap.fromTo(
-                '.about-hero-pill-anim',
-                { opacity: 0, scale: 0.5, y: 20 },
-                { opacity: 1, scale: 1, y: 0, duration: 0.55, stagger: 0.14, delay: 0.25, ease: 'back.out(2.2)', force3D: true }
-            );
-            gsap.fromTo(
-                '.about-hero-btm-anim',
-                { y: 30, opacity: 0 },
-                { y: 0, opacity: 1, duration: 0.75, delay: 0.35, ease: 'power3.out', force3D: true }
-            );
+            gsap.set('.about-hero-line', { y: '115%', opacity: 0 });
+            if (pillTwoRef.current) gsap.set(pillTwoRef.current, { opacity: 0, scale: 0.4, y: 20, rotation: 3, transformOrigin: 'center center' });
+            if (pillOneRef.current) gsap.set(pillOneRef.current, { opacity: 0, scale: 0.4, y: 20, rotation: -7, transformOrigin: 'center center' });
+            gsap.set('.about-hero-btm-anim', { y: 30, opacity: 0 });
 
             if (heroLineRef.current) {
                 const len = heroLineRef.current.getTotalLength();
                 gsap.set(heroLineRef.current, { strokeDasharray: len, strokeDashoffset: len, strokeWidth: 0 });
-                gsap.to(heroLineRef.current, {
-                    strokeDashoffset: 0,
-                    strokeWidth: 30,
-                    duration: 1.15,
-                    delay: 0.2,
-                    ease: 'power2.out',
-                });
             }
 
             if (heroIllusRef.current) {
@@ -140,7 +124,7 @@ export default function AboutPage({ about }) {
                 });
             }
 
-            // 2. Story & Team entrance + GPU parallax on 3457px background SVG
+            // 2. Story & Team entrance + winding path draw on scroll
             gsap.fromTo(
                 '.about-story-anim',
                 { y: 36, opacity: 0 },
@@ -151,7 +135,7 @@ export default function AboutPage({ about }) {
                     stagger: 0.12,
                     ease: 'power3.out',
                     force3D: true,
-                    scrollTrigger: { trigger: '.about-story-team', start: 'top 78%', once: true },
+                    scrollTrigger: { trigger: '.about-story-team', start: 'top 80%', once: true },
                 }
             );
 
@@ -166,22 +150,27 @@ export default function AboutPage({ about }) {
                     stagger: 0.12,
                     ease: 'power3.out',
                     force3D: true,
-                    scrollTrigger: { trigger: '.about-team-btm', start: 'top 82%', once: true },
+                    scrollTrigger: { trigger: '.about-team-btm', start: 'top 85%', once: true },
                 }
             );
 
             if (bodyPathRef.current) {
-                gsap.to(bodyPathRef.current, {
-                    y: -100,
-                    ease: 'none',
-                    force3D: true,
-                    scrollTrigger: {
-                        trigger: '.about-story-team',
-                        start: 'top bottom',
-                        end: 'bottom top',
-                        scrub: true,
-                    },
-                });
+                const pathEl = bodyPathRef.current.querySelector('path');
+                if (pathEl) {
+                    const len = pathEl.getTotalLength();
+                    gsap.set(pathEl, { strokeDasharray: len, strokeDashoffset: len });
+                    gsap.to(pathEl, {
+                        strokeDashoffset: 0,
+                        ease: 'none',
+                        scrollTrigger: {
+                            trigger: '.about-story-team',
+                            start: 'top 75%',
+                            end: 'bottom 85%',
+                            scrub: 0.7,
+                            invalidateOnRefresh: true,
+                        },
+                    });
+                }
             }
 
             // 3. Sticky Value Cards + Progress Bar Scrub
@@ -194,7 +183,7 @@ export default function AboutPage({ about }) {
                     ease: 'none',
                     scrollTrigger: {
                         trigger: card,
-                        start: 'top 65%',
+                        start: 'top 68%',
                         end: 'bottom 35%',
                         scrub: 0.4,
                     },
@@ -202,8 +191,39 @@ export default function AboutPage({ about }) {
             });
         }, pageRef);
 
-        return () => ctx.revert();
+        const refreshId = setTimeout(() => ScrollTrigger.refresh(), 160);
+        return () => {
+            clearTimeout(refreshId);
+            ctx.revert();
+        };
     }, []);
+
+    // 2. Hero Entrance Timeline triggered when Preloader finishes (ready=true)
+    useEffect(() => {
+        const fallback = setTimeout(() => {
+            gsap.set('.about-hero-line', { y: '0%', opacity: 1 });
+            if (pillTwoRef.current) gsap.set(pillTwoRef.current, { opacity: 1, scale: 1, y: 0, rotation: 3 });
+            if (pillOneRef.current) gsap.set(pillOneRef.current, { opacity: 1, scale: 1, y: 0, rotation: -7 });
+            gsap.set('.about-hero-btm-anim', { y: 0, opacity: 1 });
+            if (heroLineRef.current) gsap.set(heroLineRef.current, { strokeDashoffset: 0, strokeWidth: 30 });
+        }, 1700);
+
+        if (!ready) return () => clearTimeout(fallback);
+        clearTimeout(fallback);
+
+        const ctx = gsap.context(() => {
+            const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+            tl.to('.about-hero-line', { y: '0%', opacity: 1, duration: 0.75, stagger: 0.12, ease: 'back.out(1.4)', force3D: true }, 0);
+            if (pillTwoRef.current) tl.to(pillTwoRef.current, { opacity: 1, scale: 1, y: 0, rotation: 3, duration: 0.5, ease: 'back.out(2.4)' }, 0.18);
+            if (pillOneRef.current) tl.to(pillOneRef.current, { opacity: 1, scale: 1, y: 0, rotation: -7, duration: 0.5, ease: 'back.out(2.4)' }, 0.3);
+            tl.to('.about-hero-btm-anim', { y: 0, opacity: 1, duration: 0.7, force3D: true }, 0.32);
+            if (heroLineRef.current) {
+                tl.to(heroLineRef.current, { strokeDashoffset: 0, strokeWidth: 30, duration: 1.0, ease: 'power2.out' }, 0.15);
+            }
+        }, pageRef);
+
+        return () => ctx.revert();
+    }, [ready]);
 
     // 4. Moodboard Infinite GPU Marquee (zero layout thrash, pauses offscreen)
     useEffect(() => {
@@ -284,7 +304,7 @@ export default function AboutPage({ about }) {
                                 <span className="about-hero-line block">Small studio,</span>
                             </span>
                         </h1>
-                        <div className="work-hero-pill two about-hero-pill-anim">
+                        <div ref={pillTwoRef} className="work-hero-pill two about-hero-pill-anim">
                             <div className="hero-pill-text">design studio</div>
                         </div>
                         <h1 className="heading right-align less-max">
@@ -292,7 +312,7 @@ export default function AboutPage({ about }) {
                                 <span className="about-hero-line block">big brand energy</span>
                             </span>
                         </h1>
-                        <div className="work-hero-pill one about-hero-pill-anim">
+                        <div ref={pillOneRef} className="work-hero-pill one about-hero-pill-anim">
                             <div className="hero-pill-text">Independent</div>
                         </div>
                     </div>

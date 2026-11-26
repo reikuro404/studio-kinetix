@@ -129,6 +129,7 @@ function App() {
                 {route.page === 'about' && (
                     <AboutPage
                         about={data.about}
+                        ready={ready}
                         onOpenContact={() => setContactOpen(true)}
                     />
                 )}
