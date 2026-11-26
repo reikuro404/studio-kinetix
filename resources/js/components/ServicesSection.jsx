@@ -1,21 +1,49 @@
 import React, { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Compass, Layers, Monitor, PenTool, Play, Package, Sparkles } from 'lucide-react';
+import lottie from 'lottie-web';
 import MagneticHeading from './MagneticHeading';
 
 gsap.registerPlugin(ScrollTrigger);
 
 const SERVICE_CLASSES = ['one', 'two', 'three', 'four', 'five', 'six', 'seven'];
-const SERVICE_ICONS = [Compass, Layers, Monitor, PenTool, Play, Package, Sparkles];
+const LOTTIE_FILES = [
+    '/assets/lottie/brand-strategy.json',
+    '/assets/lottie/brand-identity.json',
+    '/assets/lottie/web-design.json',
+    '/assets/lottie/illustration.json',
+    '/assets/lottie/motion-design.json',
+    '/assets/lottie/packaging.json',
+    '/assets/lottie/art-direction.json',
+];
 
 export default function ServicesSection({ services }) {
     const sectionRef = useRef(null);
     const bodyRef = useRef(null);
     const darkPathRef = useRef(null);
     const svgBoxRefs = useRef([]);
+    const lottieRefs = useRef([]);
     const paraRefs = useRef([]);
 
+    // 1. Mount real local Lottie animations
+    useEffect(() => {
+        const anims = lottieRefs.current.map((container, idx) => {
+            if (!container) return null;
+            return lottie.loadAnimation({
+                container,
+                renderer: 'svg',
+                loop: true,
+                autoplay: true,
+                path: LOTTIE_FILES[idx % LOTTIE_FILES.length],
+            });
+        });
+
+        return () => {
+            anims.forEach((a) => a?.destroy());
+        };
+    }, [services.length]);
+
+    // 2. Scroll-scrubbed winding path + natural 7.25em Lottie expansion
     useEffect(() => {
         const ctx = gsap.context(() => {
             const path = darkPathRef.current;
@@ -25,8 +53,15 @@ export default function ServicesSection({ services }) {
             }
 
             svgBoxRefs.current.forEach((box) => {
-                if (box) gsap.set(box, { width: 0, scale: 0, opacity: 0, overflow: 'hidden', margin: '0px' });
+                if (!box) return;
+                const naturalWidth =
+                    box.getBoundingClientRect().width ||
+                    parseFloat(getComputedStyle(box).width) ||
+                    116;
+                box.dataset.targetWidth = String(naturalWidth);
+                gsap.set(box, { width: 0, scale: 0, opacity: 0, overflow: 'hidden', margin: '0px' });
             });
+
             paraRefs.current.forEach((p) => {
                 if (p) gsap.set(p, { scale: 0, opacity: 0, transformOrigin: 'center center' });
             });
@@ -53,7 +88,17 @@ export default function ServicesSection({ services }) {
                 const para = paraRefs.current[idx];
 
                 if (box) {
-                    masterTl.to(box, { width: '3.2em', scale: 1, opacity: 1, duration: 0.14, ease: 'back.out(3.5)' }, start);
+                    masterTl.to(
+                        box,
+                        {
+                            width: () => parseFloat(box.dataset.targetWidth) || 116,
+                            scale: 1,
+                            opacity: 1,
+                            duration: 0.14,
+                            ease: 'back.out(3.5)',
+                        },
+                        start
+                    );
                 }
                 if (para) {
                     masterTl.to(para, { scale: 1, opacity: 1, duration: 0.14, ease: 'back.out(1.8)' }, start + 0.03);
@@ -80,20 +125,24 @@ export default function ServicesSection({ services }) {
                             const words = service.title.split(' ');
                             const firstWord = words[0];
                             const secondWord = words.slice(1).join(' ');
-                            const Icon = SERVICE_ICONS[idx % SERVICE_ICONS.length];
 
                             return (
                                 <div key={idx} className="service-layer">
-                                    <div className={`service-block ${SERVICE_CLASSES[idx] || 'one'}`}>
-                                        <div className="service-text">{firstWord}</div>
+                                    <div className={`service-block ${SERVICE_CLASSES[idx] || 'one'} group cursor-default`}>
+                                        <div className="service-text transition-transform duration-300 group-hover:scale-[1.03]">
+                                            {firstWord}
+                                        </div>
                                         <div
                                             ref={(el) => (svgBoxRefs.current[idx] = el)}
-                                            className="service-svg flex items-center justify-center rounded-full"
-                                            style={{ backgroundColor: 'var(--brand-accent)', color: 'var(--brand-primary)' }}
+                                            className="service-svg"
                                         >
-                                            <Icon className="w-7 h-7" />
+                                            <div ref={(el) => (lottieRefs.current[idx] = el)} className="lottie-animation w-full h-full" />
                                         </div>
-                                        {secondWord && <div className="service-text">{secondWord}</div>}
+                                        {secondWord && (
+                                            <div className="service-text transition-transform duration-300 group-hover:scale-[1.03]">
+                                                {secondWord}
+                                            </div>
+                                        )}
                                         <div ref={(el) => (paraRefs.current[idx] = el)} className="service-block-para-wrapper">
                                             <p className="service-block-para">{service.desc}</p>
                                         </div>
