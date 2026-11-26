@@ -88,9 +88,10 @@ export default function Navbar({ hours, onOpenContact, onNavigate, theme, onChan
                         {hours}
                     </span>
 
-                    {/* Primary Color Switcher (Blue / Red / Green) */}
+                    {/* Primary Color Switcher (Orange / Blue / Red / Green) */}
                     <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border border-black/10 bg-white/90 shadow-sm">
                         {[
+                            { id: 'orange', color: '#ff5400', label: 'Original Orange' },
                             { id: 'blue', color: '#0047FF', label: 'Cobalt Blue' },
                             { id: 'red', color: '#E11D2E', label: 'Signal Red' },
                             { id: 'green', color: '#059669', label: 'Emerald Green' },

@@ -36,11 +36,11 @@ function App() {
     }));
     const [ready, setReady] = useState(false);
     const [contactOpen, setContactOpen] = useState(false);
-    const [theme, setTheme] = useState(() => localStorage.getItem('kinetix_theme') || 'blue'); // blue | red | green
+    const [theme, setTheme] = useState(() => localStorage.getItem('kinetix_theme') || 'orange'); // orange | blue | red | green
 
     useEffect(() => {
         localStorage.setItem('kinetix_theme', theme);
-        if (theme === 'blue') {
+        if (theme === 'orange') {
             document.documentElement.removeAttribute('data-theme');
         } else {
             document.documentElement.setAttribute('data-theme', theme);
