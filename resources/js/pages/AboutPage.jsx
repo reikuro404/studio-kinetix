@@ -1,25 +1,119 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { ArrowUpRight } from 'lucide-react';
+import { X } from 'lucide-react';
 import MagneticHeading from '../components/MagneticHeading';
 
 gsap.registerPlugin(ScrollTrigger);
 
-export default function AboutPage({ about, onOpenContact }) {
+const PILL_SVG_PATH =
+    'M275.442 89.5C275.442 89.5 315.942 46.9995 298.942 28C263.713 -11.373 199.942 117 178.442 89.5C159.869 65.7436 223.442 40.9995 209.942 19C185.09 -21.5005 106.942 115 83.9422 89.5C64.5454 67.9953 122.442 36.4999 106.942 19C80.2505 -11.1362 41.4424 89.5 14.4422 64.5C-2.00465 49.2716 32.4422 10 32.4422 10';
+
+function CapabilityPill({ label }) {
+    const pathRef = useRef(null);
+    const lenRef = useRef(0);
+    const [hovered, setHovered] = useState(false);
+
+    useEffect(() => {
+        const p = pathRef.current;
+        if (!p) return;
+        const len = p.getTotalLength();
+        lenRef.current = len;
+        gsap.set(p, { strokeDasharray: len, strokeDashoffset: len, strokeWidth: 0 });
+    }, []);
+
+    const onEnter = () => {
+        setHovered(true);
+        if (!pathRef.current) return;
+        gsap.to(pathRef.current, {
+            strokeDashoffset: 0,
+            strokeWidth: 200,
+            duration: 0.48,
+            ease: 'power2.out',
+            overwrite: 'auto',
+        });
+    };
+
+    const onLeave = () => {
+        setHovered(false);
+        if (!pathRef.current) return;
+        gsap.to(pathRef.current, {
+            strokeDashoffset: lenRef.current,
+            strokeWidth: 0,
+            duration: 0.36,
+            ease: 'power2.in',
+            overwrite: 'auto',
+        });
+    };
+
+    return (
+        <div
+            role="listitem"
+            onMouseEnter={onEnter}
+            onMouseLeave={onLeave}
+            className="do-cms--pill relative overflow-hidden cursor-default"
+        >
+            <div
+                className="do-pill-text relative z-[2] transition-colors duration-300"
+                style={{ color: hovered ? '#FFFFFF' : undefined }}
+            >
+                {label}
+            </div>
+            <div className="do-pill-fill absolute inset-0 w-full h-full pointer-events-none z-[1]">
+                <svg
+                    width="100%"
+                    height="100%"
+                    viewBox="0 0 314 104"
+                    preserveAspectRatio="none"
+                    fill="none"
+                    className="w-full h-full block"
+                >
+                    <path
+                        ref={pathRef}
+                        d={PILL_SVG_PATH}
+                        stroke="var(--brand-primary)"
+                        strokeWidth="0"
+                        strokeLinecap="round"
+                    />
+                </svg>
+            </div>
+        </div>
+    );
+}
+
+export default function AboutPage({ about }) {
     const pageRef = useRef(null);
     const heroLineRef = useRef(null);
-    const bodyPathRef = useRef(null);
-    const storyParaRef = useRef(null);
     const heroIllusRef = useRef(null);
+    const bodyPathRef = useRef(null);
+    const moodWrapperRef = useRef(null);
+    const moodTrackRef = useRef(null);
+    const valueCardRefs = useRef([]);
+    const valueProgRefs = useRef([]);
+
+    const [selectedMember, setSelectedMember] = useState(null);
+
+    const moodboard = about.moodboard || [];
+    const values = about.values || [];
+    const capabilities = about.capabilities || [];
 
     useEffect(() => {
         const ctx = gsap.context(() => {
-            // 1. Hero entrance stagger + Hero SVG line draw (viewBox 0 0 492 789)
+            // 1. About Hero Entrance (masked lines + floating pills + SVG line draw)
             gsap.fromTo(
-                '.about-page-stagger',
-                { y: 40, opacity: 0 },
-                { y: 0, opacity: 1, duration: 0.8, stagger: 0.12, ease: 'power3.out' }
+                '.about-hero-line',
+                { y: '115%', opacity: 0 },
+                { y: '0%', opacity: 1, duration: 0.8, stagger: 0.12, ease: 'back.out(1.4)', force3D: true }
+            );
+            gsap.fromTo(
+                '.about-hero-pill-anim',
+                { opacity: 0, scale: 0.5, y: 20 },
+                { opacity: 1, scale: 1, y: 0, duration: 0.55, stagger: 0.14, delay: 0.25, ease: 'back.out(2.2)', force3D: true }
+            );
+            gsap.fromTo(
+                '.about-hero-btm-anim',
+                { y: 30, opacity: 0 },
+                { y: 0, opacity: 1, duration: 0.75, delay: 0.35, ease: 'power3.out', force3D: true }
             );
 
             if (heroLineRef.current) {
@@ -28,7 +122,7 @@ export default function AboutPage({ about, onOpenContact }) {
                 gsap.to(heroLineRef.current, {
                     strokeDashoffset: 0,
                     strokeWidth: 30,
-                    duration: 1.2,
+                    duration: 1.15,
                     delay: 0.2,
                     ease: 'power2.out',
                 });
@@ -36,23 +130,53 @@ export default function AboutPage({ about, onOpenContact }) {
 
             if (heroIllusRef.current) {
                 gsap.to(heroIllusRef.current, {
-                    y: -14,
+                    y: -12,
                     rotation: 2,
                     duration: 2.8,
                     repeat: -1,
                     yoyo: true,
                     ease: 'sine.inOut',
+                    force3D: true,
                 });
             }
 
-            // 2. Lightweight GPU-composited parallax on winding body SVG (no CPU strokeDashoffset re-rasterization!)
+            // 2. Story & Team entrance + GPU parallax on 3457px background SVG
+            gsap.fromTo(
+                '.about-story-anim',
+                { y: 36, opacity: 0 },
+                {
+                    y: 0,
+                    opacity: 1,
+                    duration: 0.7,
+                    stagger: 0.12,
+                    ease: 'power3.out',
+                    force3D: true,
+                    scrollTrigger: { trigger: '.about-story-team', start: 'top 78%', once: true },
+                }
+            );
+
+            gsap.fromTo(
+                '.about-team-card-anim',
+                { y: 40, opacity: 0, scale: 0.96 },
+                {
+                    y: 0,
+                    opacity: 1,
+                    scale: 1,
+                    duration: 0.65,
+                    stagger: 0.12,
+                    ease: 'power3.out',
+                    force3D: true,
+                    scrollTrigger: { trigger: '.about-team-btm', start: 'top 82%', once: true },
+                }
+            );
+
             if (bodyPathRef.current) {
                 gsap.to(bodyPathRef.current, {
-                    y: -90,
+                    y: -100,
                     ease: 'none',
                     force3D: true,
                     scrollTrigger: {
-                        trigger: '.about-body-flow',
+                        trigger: '.about-story-team',
                         start: 'top bottom',
                         end: 'bottom top',
                         scrub: true,
@@ -60,204 +184,368 @@ export default function AboutPage({ about, onOpenContact }) {
                 });
             }
 
-            // 3. Smooth paragraph reveal (replaces ~120 per-word scrub tweens)
-            if (storyParaRef.current) {
-                const paras = Array.from(storyParaRef.current.querySelectorAll('p'));
-                gsap.fromTo(
-                    paras,
-                    { y: 24, opacity: 0.2 },
-                    {
-                        y: 0,
-                        opacity: 1,
-                        duration: 0.7,
-                        stagger: 0.14,
-                        ease: 'power2.out',
-                        force3D: true,
-                        scrollTrigger: {
-                            trigger: storyParaRef.current,
-                            start: 'top 82%',
-                            once: true,
-                        },
-                    }
-                );
-            }
-
-            // 4. Team cards staggered entrance (once: true, GPU accelerated)
-            gsap.fromTo(
-                '.team-card-anim',
-                { y: 36, opacity: 0, scale: 0.96 },
-                {
-                    y: 0,
-                    opacity: 1,
-                    scale: 1,
-                    duration: 0.65,
-                    stagger: 0.1,
-                    ease: 'power3.out',
-                    force3D: true,
+            // 3. Sticky Value Cards + Progress Bar Scrub
+            valueCardRefs.current.forEach((card, idx) => {
+                const prog = valueProgRefs.current[idx];
+                if (!card || !prog) return;
+                gsap.set(prog, { scaleX: 0, transformOrigin: 'left center' });
+                gsap.to(prog, {
+                    scaleX: 1,
+                    ease: 'none',
                     scrollTrigger: {
-                        trigger: '.team-grid-anim',
-                        start: 'top 84%',
-                        once: true,
+                        trigger: card,
+                        start: 'top 65%',
+                        end: 'bottom 35%',
+                        scrub: 0.4,
                     },
-                }
-            );
+                });
+            });
         }, pageRef);
 
         return () => ctx.revert();
     }, []);
 
-    return (
-        <div ref={pageRef} className="relative overflow-hidden pt-28 md:pt-32 pb-16 md:pb-24">
-            {/* Exact Original About Hero SVG Line (Right Side) */}
-            <svg
-                className="hidden md:block absolute right-0 top-12 w-64 lg:w-80 h-auto pointer-events-none opacity-85 z-0"
-                viewBox="0 0 492 789"
-                fill="none"
-            >
-                <path
-                    ref={heroLineRef}
-                    d="M346.027 773.963C346.027 773.963 123.155 751.726 37.5236 580.463C-5.47612 494.463 12.1589 403.856 98.5229 359.463C259.022 276.963 386.528 426.963 423.028 500.963C469.82 595.828 230.528 683.463 212.028 548.463C195.241 425.963 407.22 329.963 451.028 251.963C519.452 130.133 435.528 24.9629 380.528 15.9629C337.028 8.84469 282.028 42.1764 282.028 85.9629C282.028 142.463 359.528 181.463 359.528 181.463"
-                    stroke="var(--brand-primary)"
-                    strokeWidth="30"
-                    strokeLinecap="round"
-                />
-            </svg>
+    // 4. Moodboard Infinite GPU Marquee (zero layout thrash, pauses offscreen)
+    useEffect(() => {
+        const wrapper = moodWrapperRef.current;
+        const track = moodTrackRef.current;
+        if (!wrapper || !track) return;
 
-            <div className="relative z-10 max-w-[1440px] mx-auto px-5 md:px-10">
-                {/* Hero */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center mb-20 md:mb-28">
-                    <div className="lg:col-span-8 about-page-stagger">
-                        <span
-                            className="inline-block px-3.5 py-1 rounded-full text-xs font-medium uppercase tracking-wider mb-5"
-                            style={{ backgroundColor: 'var(--brand-accent)', color: 'var(--brand-primary)' }}
-                        >
-                            Independent Design Studio
-                        </span>
-                        <MagneticHeading
-                            as="h1"
-                            className="font-display text-6xl sm:text-7xl md:text-9xl uppercase leading-[0.88] tracking-tight mb-6"
-                        >
-                            {about.headline}
-                        </MagneticHeading>
-                        <p className="text-xl md:text-2xl opacity-80 max-w-2xl leading-relaxed">
-                            {about.intro}
-                        </p>
+        const slides = Array.from(track.querySelectorAll('.moodboard-slide'));
+        if (!slides.length) return;
+
+        let setWidth = 0;
+        let isVisible = false;
+
+        const measure = () => {
+            const half = slides.length / 2;
+            if (slides[half] && slides[0]) {
+                setWidth = slides[half].offsetLeft - slides[0].offsetLeft;
+            }
+        };
+        measure();
+        window.addEventListener('resize', measure);
+
+        const io = new IntersectionObserver(
+            ([entry]) => {
+                isVisible = entry.isIntersecting;
+            },
+            { rootMargin: '200px 0px' }
+        );
+        io.observe(wrapper);
+
+        let currentX = 0;
+        let velBoost = 0;
+
+        const st = ScrollTrigger.create({
+            trigger: document.body,
+            start: 'top top',
+            end: 'bottom bottom',
+            onUpdate: (self) => {
+                if (!isVisible) return;
+                const dir = self.direction === 1 ? -1 : 1;
+                const vel = Math.abs(self.getVelocity() || 0);
+                velBoost = Math.min(vel / 240, 8) * dir;
+            },
+        });
+
+        const tick = () => {
+            if (!isVisible) return;
+            velBoost *= 0.92;
+            currentX += -1.3 + velBoost;
+
+            if (setWidth > 0) {
+                while (currentX <= -setWidth) currentX += setWidth;
+                while (currentX > 0) currentX -= setWidth;
+            }
+
+            track.style.transform = `translate3d(${currentX}px, 0, 0)`;
+        };
+
+        gsap.ticker.add(tick);
+        return () => {
+            gsap.ticker.remove(tick);
+            st.kill();
+            io.disconnect();
+            window.removeEventListener('resize', measure);
+        };
+    }, [moodboard.length]);
+
+    const doubledMoodboard = [...moodboard, ...moodboard];
+
+    return (
+        <div ref={pageRef}>
+            {/* 1. SECTION ABOUT HERO */}
+            <section className="section-about-hero">
+                <div className="section-about-hero-wrapper">
+                    <div className="about-hero-text">
+                        <h1 className="heading left-align">
+                            <span className="block overflow-hidden">
+                                <span className="about-hero-line block">Small studio,</span>
+                            </span>
+                        </h1>
+                        <div className="work-hero-pill two about-hero-pill-anim">
+                            <div className="hero-pill-text">design studio</div>
+                        </div>
+                        <h1 className="heading right-align less-max">
+                            <span className="block overflow-hidden">
+                                <span className="about-hero-line block">big brand energy</span>
+                            </span>
+                        </h1>
+                        <div className="work-hero-pill one about-hero-pill-anim">
+                            <div className="hero-pill-text">Independent</div>
+                        </div>
                     </div>
-                    <div className="lg:col-span-4 about-page-stagger flex justify-center">
-                        <img
-                            ref={heroIllusRef}
-                            src={about.illustrations.hero}
-                            alt="Studio illustration"
-                            className="w-full max-w-sm h-auto object-contain"
-                        />
+
+                    <div className="about-hero-path">
+                        <div className="code-embed-2 w-embed">
+                            <svg width="492" height="789" viewBox="0 0 492 789" fill="none">
+                                <path
+                                    ref={heroLineRef}
+                                    d="M346.027 773.963C346.027 773.963 123.155 751.726 37.5236 580.463C-5.47612 494.463 12.1589 403.856 98.5229 359.463C259.022 276.963 386.528 426.963 423.028 500.963C469.82 595.828 230.528 683.463 212.028 548.463C195.241 425.963 407.22 329.963 451.028 251.963C519.452 130.133 435.528 24.9629 380.528 15.9629C337.028 8.84469 282.028 42.1764 282.028 85.9629C282.028 142.463 359.528 181.463 359.528 181.463"
+                                    stroke="var(--brand-primary)"
+                                    strokeWidth="30"
+                                    strokeLinecap="round"
+                                />
+                            </svg>
+                        </div>
+                    </div>
+
+                    <div className="about-hero-btm about-hero-btm-anim">
+                        <div className="about-hero-svg-wrapper">
+                            <img
+                                ref={heroIllusRef}
+                                src={about.illustrations.hero}
+                                alt="Studio illustration"
+                                className="about-hero-img"
+                            />
+                        </div>
+                        <div className="abput-para-wrapper">
+                            <p className="about-hero-para">{about.intro}</p>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </section>
 
-            {/* Body Flow with GPU-cached Winding SVG Path */}
-            <div className="about-body-flow relative max-w-[1440px] mx-auto px-5 md:px-10">
-                <svg
-                    ref={bodyPathRef}
-                    className="hidden md:block absolute inset-x-0 top-0 w-full h-full pointer-events-none opacity-15 z-0 will-change-transform"
-                    viewBox="0 0 1440 3457"
-                    fill="none"
-                    preserveAspectRatio="xMidYMin slice"
-                >
-                    <path
-                        d="M723.846 50.0081C650.835 174.483 836.793 262.47 825.385 406.936C799.653 732.805 98.5142 598.392 111.169 948.003C123.495 1288.51 1122.55 1135.95 1155.5 1698.51C1177.93 2081.41 570.052 2505.13 400.796 2311.05C308.932 2205.72 378.305 2027.34 533.817 2045.1C673.838 2061.1 699.146 2203.11 688.426 2277.8C657.968 2490.01 565.5 2804.01 688.426 3098.51"
-                        stroke="var(--brand-primary)"
-                        strokeWidth="100"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                    />
-                </svg>
+            {/* 2. ABOUT STORY & TEAM */}
+            <section className="about-story-team">
+                <div className="about-story-team-wrapper">
+                    <div className="about-story">
+                        <div className="about-story-section">
+                            <div className="about-story-svg-wrap about-story-anim">
+                                <img
+                                    src={about.illustrations.studio}
+                                    alt="Studio story illustration"
+                                    loading="lazy"
+                                    className="about-story-img"
+                                />
+                            </div>
+                            <div className="about-story-right about-story-anim">
+                                <div className="about-story-text">How We Started</div>
+                                <h2 className="about-story-heading">{about.storyTitle}</h2>
+                                {about.story.map((p, i) => (
+                                    <p key={i} className="about-story-para">
+                                        {p}
+                                    </p>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
 
-                {/* How We Started */}
-                <div
-                    className="relative z-10 p-8 md:p-14 rounded-3xl border mb-20 md:mb-28 grid grid-cols-1 lg:grid-cols-12 gap-10 items-center about-page-stagger"
-                    style={{
-                        backgroundColor: 'var(--brand-secondary)',
-                        borderColor: 'color-mix(in srgb, var(--brand-black) 8%, transparent)',
-                    }}
-                >
-                    <div className="lg:col-span-7">
-                        <span
-                            className="text-xs font-medium uppercase tracking-[0.2em] block mb-3"
-                            style={{ color: 'var(--brand-primary)' }}
-                        >
-                            How We Started
-                        </span>
-                        <h2 className="font-display text-4xl md:text-6xl uppercase leading-[0.95] tracking-tight mb-6">
-                            {about.storyTitle}
-                        </h2>
-                        <div ref={storyParaRef} className="space-y-4 text-base md:text-lg leading-relaxed opacity-85">
-                            {about.story.map((p, i) => (
-                                <p key={i}>{p}</p>
+                    <div className="about-team">
+                        <div className="section-projects-header">
+                            <div className="section-about-text white">Less size, more scope</div>
+                            <div className="section-heading-wrapper">
+                                <MagneticHeading className="section-heading white">
+                                    THIS IS PRETTY MUCH EVERYONE
+                                </MagneticHeading>
+                            </div>
+                        </div>
+
+                        <div className="about-team-btm">
+                            {about.team.map((member, idx) => (
+                                <button
+                                    key={idx}
+                                    type="button"
+                                    onClick={() => setSelectedMember(member)}
+                                    className="team-card about-team-card-anim text-left cursor-pointer group"
+                                >
+                                    <div className="team-img-wrapper">
+                                        <img
+                                            src={member.photo}
+                                            alt={member.name}
+                                            loading="lazy"
+                                            decoding="async"
+                                            className="team-img transition-transform duration-500 group-hover:scale-105"
+                                        />
+                                    </div>
+                                    <div className="team-name">{member.name}</div>
+                                    <div className="team-sub">{member.role}</div>
+                                </button>
                             ))}
                         </div>
                     </div>
-                    <div className="lg:col-span-5 flex flex-col items-center gap-6">
-                        <img
-                            src={about.illustrations.studio}
-                            alt="Studio life illustration"
-                            className="w-full max-w-xs h-auto object-contain"
-                        />
-                    </div>
                 </div>
 
-                {/* Team */}
-                <div className="relative z-10 mb-12">
-                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
-                        <div>
-                            <span
-                                className="text-xs font-medium uppercase tracking-[0.2em] block mb-2"
-                                style={{ color: 'var(--brand-primary)' }}
-                            >
-                                Less size, more scope
-                            </span>
-                            <h2 className="font-display text-5xl md:text-7xl uppercase leading-[0.9] tracking-tight">
-                                This is pretty much everyone
-                            </h2>
-                        </div>
-                        <button
-                            type="button"
-                            onClick={onOpenContact}
-                            className="group inline-flex items-center gap-2.5 px-6 py-3.5 rounded-full text-sm font-medium text-white cursor-pointer transition-transform hover:scale-105"
-                            style={{ backgroundColor: 'var(--brand-primary)' }}
+                {/* GPU-cached 3457px Winding Path */}
+                <div className="about-story-scroll-path">
+                    <div className="about-story-svg w-embed">
+                        <svg
+                            ref={bodyPathRef}
+                            width="100%"
+                            viewBox="0 0 1440 3457"
+                            fill="none"
+                            style={{ height: 'auto', overflow: 'visible' }}
+                            className="will-change-transform"
                         >
-                            <span>Work with us</span>
-                            <ArrowUpRight className="w-4 h-4 transition-transform group-hover:rotate-45" />
-                        </button>
+                            <path
+                                d="M723.846 50.0081C650.835 174.483 836.793 262.47 825.385 406.936C799.653 732.805 98.5142 598.392 111.169 948.003C123.495 1288.51 1122.55 1135.95 1155.5 1698.51C1177.93 2081.41 570.052 2505.13 400.796 2311.05C308.932 2205.72 378.305 2027.34 533.817 2045.1C673.838 2061.1 699.146 2203.11 688.426 2277.8C657.968 2490.01 565.5 2804.01 688.426 3098.51"
+                                stroke="var(--brand-primary)"
+                                strokeWidth="100"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                            />
+                        </svg>
+                    </div>
+                </div>
+            </section>
+
+            {/* 3. SECTION MOODBOARD */}
+            <section className="section-moodboard">
+                <div className="section-moodboard-wrapper">
+                    <div className="section-projects-header">
+                        <div className="section-about-text">Moodboard</div>
+                        <div className="section-heading-wrapper">
+                            <MagneticHeading className="section-heading orange">
+                                Behind the work
+                            </MagneticHeading>
+                        </div>
                     </div>
 
-                    <div className="team-grid-anim grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {about.team.map((member, idx) => (
-                            <div
-                                key={idx}
-                                className="team-card-anim rounded-3xl overflow-hidden border group"
-                                style={{
-                                    backgroundColor: 'var(--brand-accent)',
-                                    borderColor: 'color-mix(in srgb, var(--brand-primary) 20%, transparent)',
-                                }}
-                            >
-                                <div className="aspect-[4/5] overflow-hidden">
+                    <div ref={moodWrapperRef} className="moodboard-slider-wrapper">
+                        <div ref={moodTrackRef} className="moodboard-slider will-change-transform">
+                            {doubledMoodboard.map((src, idx) => (
+                                <div key={idx} className="moodboard-slide">
                                     <img
-                                        src={member.photo}
-                                        alt={member.name}
+                                        src={src}
+                                        alt={`Behind the work ${(idx % moodboard.length) + 1}`}
                                         loading="lazy"
                                         decoding="async"
-                                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                        className="moodboard-img"
                                     />
                                 </div>
-                                <div className="p-6">
-                                    <h3 className="font-display text-3xl uppercase tracking-tight">{member.name}</h3>
-                                    <p className="text-sm opacity-70 mt-1">{member.role}</p>
-                                </div>
-                            </div>
-                        ))}
+                            ))}
+                        </div>
                     </div>
                 </div>
-            </div>
+            </section>
+
+            {/* 4. SECTION VALUES (Sticky Stacking Cards) */}
+            <section className="section-values">
+                <div className="section-values-wrapper">
+                    {values.map((val, idx) => (
+                        <div
+                            key={val.num}
+                            ref={(el) => (valueCardRefs.current[idx] = el)}
+                            className="value-card"
+                            style={{
+                                position: 'sticky',
+                                top: `${5 + idx * 4.5}em`,
+                                zIndex: 10 + idx * 10,
+                            }}
+                        >
+                            <div className="value-text">The Office Rules {val.num}</div>
+                            <div className="value-content">
+                                <h2 className="value-heading">{val.title}</h2>
+                                <p className="value-para">{val.desc}</p>
+                            </div>
+                            <div
+                                ref={(el) => (valueProgRefs.current[idx] = el)}
+                                className="value-progress"
+                            />
+                        </div>
+                    ))}
+                </div>
+            </section>
+
+            {/* 5. SECTION WHAT WE DO (Paintbrush Hover Pills) */}
+            <section className="section-what-we-do">
+                <div className="section-what-we-do-wrapper">
+                    <div className="section-projects-header">
+                        <div className="section-about-text">CAPABILITIES</div>
+                        <div className="section-heading-wrapper">
+                            <MagneticHeading className="section-heading">
+                                WE’VE GOT RANGE
+                            </MagneticHeading>
+                        </div>
+                    </div>
+
+                    <div className="what-we-do-cms">
+                        <div role="list" className="do-cms-list">
+                            {capabilities.map((cap, idx) => (
+                                <CapabilityPill key={idx} label={cap} />
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* Team Member Popup Modal */}
+            {selectedMember && (
+                <div
+                    onClick={() => setSelectedMember(null)}
+                    className="fixed inset-0 z-[700] bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 md:p-8"
+                >
+                    <div
+                        onClick={(e) => e.stopPropagation()}
+                        className="relative max-w-2xl w-full rounded-3xl overflow-hidden grid grid-cols-1 sm:grid-cols-12 shadow-2xl"
+                        style={{ backgroundColor: 'var(--brand-white)', color: 'var(--brand-black)' }}
+                    >
+                        <button
+                            type="button"
+                            onClick={() => setSelectedMember(null)}
+                            aria-label="Close popup"
+                            className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition-transform hover:scale-105"
+                            style={{ backgroundColor: 'var(--brand-black)', color: '#FFFFFF' }}
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
+                        <div className="sm:col-span-5 aspect-[4/5] sm:aspect-auto">
+                            <img
+                                src={selectedMember.photo}
+                                alt={selectedMember.name}
+                                className="w-full h-full object-cover"
+                            />
+                        </div>
+                        <div className="sm:col-span-7 p-7 md:p-9 flex flex-col justify-between gap-6">
+                            <div>
+                                <h3 className="font-display text-4xl uppercase tracking-tight">
+                                    {selectedMember.name}
+                                </h3>
+                                <p className="text-sm font-medium mt-1" style={{ color: 'var(--brand-primary)' }}>
+                                    {selectedMember.role}
+                                </p>
+                                <p className="text-base leading-relaxed opacity-85 mt-5">
+                                    {selectedMember.bio}
+                                </p>
+                            </div>
+                            {selectedMember.tags && (
+                                <div className="flex flex-wrap gap-2">
+                                    {selectedMember.tags.map((tag, i) => (
+                                        <span
+                                            key={i}
+                                            className="px-3 py-1 rounded-full text-xs font-medium"
+                                            style={{ backgroundColor: 'var(--brand-accent)', color: 'var(--brand-primary)' }}
+                                        >
+                                            {tag}
+                                        </span>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
