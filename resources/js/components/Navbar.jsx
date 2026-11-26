@@ -114,13 +114,13 @@ export default function Navbar({ hours, onOpenContact, onNavigate, theme, onChan
                     <button
                         type="button"
                         onClick={onOpenContact}
-                        className="group hidden md:inline-flex items-center gap-3 pl-4 pr-1.5 py-1.5 rounded-full text-sm font-medium text-white shadow-md transition-transform duration-300 hover:scale-[1.03] cursor-pointer"
-                        style={{ backgroundColor: 'var(--brand-black)' }}
+                        className="group hidden md:inline-flex items-center gap-3 pl-4 pr-1.5 py-1.5 rounded-full text-sm font-medium shadow-md transition-transform duration-300 hover:scale-[1.03] cursor-pointer"
+                        style={{ backgroundColor: 'var(--brand-black)', color: '#FFFFFF' }}
                     >
-                        <span>Let&apos;s Talk</span>
+                        <span style={{ color: '#FFFFFF' }}>Let&apos;s Talk</span>
                         <span
                             className="w-7 h-7 rounded-full flex items-center justify-center transition-transform duration-300 group-hover:rotate-45"
-                            style={{ backgroundColor: 'var(--brand-primary)' }}
+                            style={{ backgroundColor: 'var(--brand-primary)', color: '#FFFFFF' }}
                         >
                             <ArrowUpRight className="w-4 h-4 text-white" />
                         </span>

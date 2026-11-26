@@ -78,7 +78,16 @@ export default function HeroSection({ ready }) {
     }, []);
 
     useEffect(() => {
-        if (!ready) return;
+        // Safety fallback: ensure hero text & pills are never stuck hidden
+        const fallback = setTimeout(() => {
+            gsap.set('.hero-line-inner', { y: '0%', opacity: 1 });
+            gsap.set(pillRefs.current.filter(Boolean), { opacity: 1, scale: 1, y: 0 });
+            gsap.set(pillTextRefs.current.filter(Boolean), { y: '0%', opacity: 1 });
+        }, 1800);
+
+        if (!ready) return () => clearTimeout(fallback);
+        clearTimeout(fallback);
+
         const ctx = gsap.context(() => {
             const tl = gsap.timeline({ defaults: { ease: 'power2.out' } });
 

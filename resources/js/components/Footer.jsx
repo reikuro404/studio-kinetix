@@ -114,13 +114,13 @@ export default function Footer({ brand, onOpenContact, onNavigate }) {
                         <button
                             type="button"
                             onClick={onOpenContact}
-                            className="group inline-flex items-center gap-3 pl-5 pr-1.5 py-1.5 rounded-full text-sm font-medium text-white shadow-lg transition-transform duration-300 hover:scale-105 cursor-pointer"
-                            style={{ backgroundColor: 'var(--brand-black)' }}
+                            className="group inline-flex items-center gap-3 pl-5 pr-1.5 py-1.5 rounded-full text-sm font-medium shadow-lg transition-transform duration-300 hover:scale-105 cursor-pointer"
+                            style={{ backgroundColor: 'var(--brand-black)', color: '#FFFFFF' }}
                         >
-                            <span>Let&apos;s Talk</span>
+                            <span style={{ color: '#FFFFFF' }}>Let&apos;s Talk</span>
                             <span
                                 className="w-8 h-8 rounded-full flex items-center justify-center transition-transform duration-300 group-hover:rotate-45"
-                                style={{ backgroundColor: 'var(--brand-primary)' }}
+                                style={{ backgroundColor: 'var(--brand-primary)', color: '#FFFFFF' }}
                             >
                                 <ArrowUpRight className="w-4 h-4 text-white" />
                             </span>

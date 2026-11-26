@@ -135,3 +135,47 @@ body {
 .project-card:hover .img-primary {
     transform: scale(1.04);
 }
+
+/* Z-index & Pinning Clearances + Responsive Guards */
+.hero-text {
+    position: relative !important;
+    z-index: 150 !important;
+}
+
+.hero-video-loop {
+    position: relative !important;
+    z-index: 10 !important;
+}
+
+.hero-video-bg {
+    z-index: 10 !important;
+}
+
+.about-pinned {
+    padding-top: 5em;
+}
+
+@media (max-width: 767px) {
+    .section-hero-wrapper {
+        padding-top: 5.5em !important;
+    }
+    .hero-text h1.heading {
+        font-size: 4.5em !important;
+        line-height: 0.9 !important;
+    }
+    .hero-pill.one {
+        left: 4% !important;
+        top: 38% !important;
+    }
+    .hero-pill.two {
+        right: 8% !important;
+        top: 6% !important;
+    }
+    .hero-pill.three {
+        right: 6% !important;
+        bottom: -14% !important;
+    }
+    .projects-end-para {
+        font-size: 2.8em !important;
+    }
+}
