@@ -68,25 +68,6 @@ export default function HeroSection({ ready }) {
                     },
                 });
             }
-
-            // 3. Hero Video Scroll-to-Card Morph
-            if (videoLoopRef.current) {
-                gsap.fromTo(
-                    videoLoopRef.current,
-                    { scale: 1, borderRadius: '0px' },
-                    {
-                        scale: 0.86,
-                        borderRadius: '28px',
-                        ease: 'none',
-                        scrollTrigger: {
-                            trigger: sectionRef.current,
-                            start: 'top top',
-                            end: 'bottom top',
-                            scrub: 0.6,
-                        },
-                    }
-                );
-            }
         }, sectionRef);
 
         return () => ctx.revert();
@@ -167,9 +148,9 @@ export default function HeroSection({ ready }) {
                 </div>
 
                 {/* Central Hero Video Loop */}
-                <div ref={videoLoopRef} className="hero-video-loop overflow-hidden">
+                <div ref={videoLoopRef} className="hero-video-loop">
                     <div className="hero-video-bg w-background-video w-background-video-atom">
-                        <video autoPlay loop muted playsInline className="w-full h-full object-cover">
+                        <video autoPlay loop muted playsInline style={{ objectFit: 'cover', width: '100%', height: '100%' }}>
                             <source src="/assets/media/Hero_mp4.mp4" type="video/mp4" />
                             <source src="/assets/media/Hero_webm.webm" type="video/webm" />
                         </video>
