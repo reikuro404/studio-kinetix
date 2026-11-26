@@ -99,7 +99,7 @@ export default function CaseStudyPage({ project, allProjects, onNavigate }) {
                         className={`rounded-2xl overflow-hidden border ${i === 0 ? 'md:col-span-2 aspect-[16/9]' : 'aspect-[4/3]'}`}
                         style={{ borderColor: 'color-mix(in srgb, var(--brand-black) 8%, transparent)' }}
                     >
-                        <img src={img} alt={`${project.title} shot ${i + 1}`} className="w-full h-full object-cover" />
+                        <img src={img} alt={`${project.title} shot ${i + 1}`} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                     </div>
                 ))}
             </div>

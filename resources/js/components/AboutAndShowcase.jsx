@@ -57,6 +57,7 @@ export default function AboutAndShowcase({ showcase }) {
                         rotation: () => gsap.utils.random(-4, 4),
                         duration: 3.5,
                         ease: 'power1.out',
+                        force3D: true,
                     },
                     start
                 ).to(
@@ -67,6 +68,7 @@ export default function AboutAndShowcase({ showcase }) {
                         rotation: 0,
                         duration: 3.5,
                         ease: 'power1.inOut',
+                        force3D: true,
                     },
                     start + 3.5
                 );
@@ -190,7 +192,7 @@ export default function AboutAndShowcase({ showcase }) {
                         {doubledShowcase.map((item, idx) => (
                             <div key={idx} className="showcase-slide">
                                 {item.type === 'video' ? (
-                                    <video autoPlay loop muted playsInline className="w-full h-full object-cover">
+                                    <video autoPlay loop muted playsInline preload="metadata" className="w-full h-full object-cover">
                                         <source src={item.mp4} type="video/mp4" />
                                         <source src={item.webm} type="video/webm" />
                                     </video>
@@ -198,6 +200,8 @@ export default function AboutAndShowcase({ showcase }) {
                                     <img
                                         src={item.src}
                                         alt={`Showcase ${(idx % showcase.length) + 1}`}
+                                        loading="lazy"
+                                        decoding="async"
                                         className="w-full h-full object-cover"
                                     />
                                 )}

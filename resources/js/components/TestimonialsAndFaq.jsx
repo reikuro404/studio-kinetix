@@ -155,17 +155,12 @@ export default function TestimonialsAndFaq({ testimonials, faqs }) {
     return (
         <div>
             {/* Physical Stacked Deck Testimonials */}
-            <section className="py-24 md:py-32 px-5 md:px-10 max-w-[1440px] mx-auto">
-                <div className="mb-14 text-center">
-                    <span
-                        className="inline-block text-xs font-medium uppercase tracking-[0.2em] mb-3"
-                        style={{ color: 'var(--brand-primary)' }}
-                    >
-                        Testimonials
-                    </span>
-                    <div>
-                        <MagneticHeading className="font-display text-5xl sm:text-7xl md:text-8xl uppercase leading-[0.9] tracking-tight">
-                            Apparently, they like us
+            <section className="section-testimonials py-20 md:py-28 px-5 md:px-10 max-w-[1440px] mx-auto">
+                <div className="section-projects-header mb-12">
+                    <div className="section-about-text">TESTIMONIALS</div>
+                    <div className="section-heading-wrapper">
+                        <MagneticHeading className="section-heading">
+                            APPARENTLY, THEY LIKE US
                         </MagneticHeading>
                     </div>
                 </div>
@@ -241,17 +236,14 @@ export default function TestimonialsAndFaq({ testimonials, faqs }) {
             </section>
 
             {/* Chat-Bubble Split FAQ Accordion (exact two26.studio style) */}
-            <section className="py-20 md:py-28 px-5 md:px-10 max-w-[1440px] mx-auto">
-                <div className="mb-14">
-                    <span
-                        className="inline-block text-xs font-medium uppercase tracking-[0.2em] mb-3"
-                        style={{ color: 'var(--brand-primary)' }}
-                    >
-                        Frequently Asked Questions
-                    </span>
-                    <h2 className="font-display text-5xl md:text-7xl uppercase leading-[0.92] tracking-tight">
-                        Things you might ask
-                    </h2>
+            <section className="section-faq py-20 md:py-28 px-5 md:px-10 max-w-[1440px] mx-auto">
+                <div className="section-projects-header mb-12">
+                    <div className="section-about-text">Frequently Asked Questions</div>
+                    <div className="section-heading-wrapper">
+                        <MagneticHeading className="section-heading">
+                            THINGS YOU MIGHT ASK
+                        </MagneticHeading>
+                    </div>
                 </div>
 
                 <div className="space-y-4">
