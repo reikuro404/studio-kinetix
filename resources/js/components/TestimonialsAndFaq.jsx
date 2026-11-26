@@ -14,6 +14,60 @@ export default function TestimonialsAndFaq({ testimonials, faqs }) {
     const arrowRef = useRef(null);
     const isAnimatingRef = useRef(false);
     const arrowDirRef = useRef(0);
+    const faqRefs = useRef([]);
+    const prevFaqRef = useRef(0);
+
+    // Smooth GSAP FAQ accordion open/close transitions
+    useEffect(() => {
+        const openWidth = () => (window.innerWidth >= 992 ? '50%' : '75%');
+
+        faqRefs.current.forEach((el, idx) => {
+            if (!el) return;
+            const qBlock = el.querySelector('.question-block');
+            const aBlock = el.querySelector('.faq-block-btm');
+            const logo = el.querySelector('.faq-logo');
+            const answerText = el.querySelector('.faq-answer');
+            if (!qBlock || !aBlock) return;
+
+            const isOpen = openFaq === idx;
+            const wasOpen = prevFaqRef.current === idx;
+
+            if (isOpen && !wasOpen) {
+                gsap.killTweensOf([qBlock, aBlock, logo, answerText]);
+                gsap.set(aBlock, { display: 'flex', overflow: 'hidden' });
+                gsap.to(qBlock, { width: openWidth(), borderWidth: '1px', duration: 0.48, ease: 'power3.out' });
+                gsap.fromTo(
+                    aBlock,
+                    { height: 0, opacity: 0, scale: 0.85 },
+                    {
+                        height: 'auto',
+                        opacity: 1,
+                        scale: 1,
+                        duration: 0.5,
+                        ease: 'power3.out',
+                        onComplete: () => gsap.set(aBlock, { overflow: 'visible' }),
+                    }
+                );
+                if (logo) gsap.fromTo(logo, { scale: 0 }, { scale: 1, duration: 0.45, delay: 0.12, ease: 'back.out(2)' });
+                if (answerText) gsap.fromTo(answerText, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.4, delay: 0.08, ease: 'power2.out' });
+            } else if (!isOpen && wasOpen) {
+                gsap.killTweensOf([qBlock, aBlock, logo, answerText]);
+                gsap.set(aBlock, { overflow: 'hidden' });
+                if (logo) gsap.to(logo, { scale: 0, duration: 0.2, ease: 'power2.in' });
+                gsap.to(qBlock, { width: '100%', borderWidth: '0px', duration: 0.42, ease: 'power3.inOut' });
+                gsap.to(aBlock, {
+                    height: 0,
+                    opacity: 0,
+                    scale: 0.9,
+                    duration: 0.36,
+                    ease: 'power3.inOut',
+                    onComplete: () => gsap.set(aBlock, { display: 'none' }),
+                });
+            }
+        });
+
+        prevFaqRef.current = openFaq;
+    }, [openFaq]);
 
     const totalCards = testimonials.length;
 
@@ -265,6 +319,7 @@ export default function TestimonialsAndFaq({ testimonials, faqs }) {
                                     return (
                                         <div
                                             key={idx}
+                                            ref={(el) => (faqRefs.current[idx] = el)}
                                             role="listitem"
                                             className={`faq-item ${isOpen ? 'is-open' : ''}`}
                                         >
@@ -272,12 +327,10 @@ export default function TestimonialsAndFaq({ testimonials, faqs }) {
                                                 <button
                                                     type="button"
                                                     onClick={() => setOpenFaq(isOpen ? -1 : idx)}
-                                                    className="question-block text-left cursor-pointer transition-all duration-500 ease-out"
+                                                    className="question-block text-left cursor-pointer"
                                                     style={{
-                                                        width: isOpen
-                                                            ? 'min(100%, 26em)'
-                                                            : '100%',
-                                                        borderWidth: isOpen ? '1px' : '0px',
+                                                        width: idx === 0 && prevFaqRef.current === 0 ? 'min(100%, 26em)' : undefined,
+                                                        borderWidth: idx === 0 && prevFaqRef.current === 0 ? '1px' : undefined,
                                                         borderStyle: 'solid',
                                                         borderColor: 'var(--brand-primary)',
                                                     }}
@@ -286,11 +339,9 @@ export default function TestimonialsAndFaq({ testimonials, faqs }) {
                                                 </button>
 
                                                 <div
-                                                    className="faq-block-btm transition-all duration-500 ease-out"
+                                                    className="faq-block-btm"
                                                     style={{
-                                                        display: isOpen ? 'flex' : 'none',
-                                                        opacity: isOpen ? 1 : 0,
-                                                        transform: isOpen ? 'scale(1)' : 'scale(0.95)',
+                                                        display: idx === 0 ? 'flex' : 'none',
                                                         transformOrigin: 'right bottom',
                                                     }}
                                                 >

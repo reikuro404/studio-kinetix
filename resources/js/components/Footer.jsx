@@ -90,10 +90,12 @@ export default function Footer({ brand, onOpenContact, onNavigate }) {
             className="relative overflow-hidden pt-16 md:pt-24 pb-4 px-5 md:px-10 text-white"
             style={{ backgroundColor: 'var(--brand-primary)' }}
         >
-            {/* Curvy ribbon texture across footer */}
-            <div
-                className="absolute inset-0 opacity-20 pointer-events-none bg-no-repeat bg-cover bg-center"
-                style={{ backgroundImage: "url('/assets/media/footer-texture.svg')" }}
+            {/* Curvy ribbon texture across footer (SVG already has 0.06 fill-opacity) */}
+            <img
+                src="/assets/media/footer-texture.svg"
+                alt=""
+                aria-hidden="true"
+                className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none z-0"
             />
 
             <div className="relative z-10 max-w-[1440px] mx-auto">
