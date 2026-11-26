@@ -1,0 +1,124 @@
+@import "tailwindcss";
+
+@font-face {
+    font-family: "MDNichrome";
+    src: url("/assets/fonts/MDNichromeTest-Bold.woff") format("woff");
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "MDNichromeDark";
+    src: url("/assets/fonts/MDNichromeTest-Dark.woff") format("woff");
+    font-weight: 800;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "NeueMontreal";
+    src: url("/assets/fonts/NeueMontreal-Regular.otf") format("opentype");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "NeueMontreal";
+    src: url("/assets/fonts/NeueMontreal-Medium.otf") format("opentype");
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
+:root {
+    --brand-primary: #0047FF;
+    --brand-primary-dark: #0035C5;
+    --brand-white: #F7F8FA;
+    --brand-secondary: #EBEEF5;
+    --brand-accent: #DCE6FF;
+    --brand-black: #0A0B0E;
+    --font-display: "MDNichromeDark", "MDNichrome", system-ui, sans-serif;
+    --font-body: "NeueMontreal", system-ui, -apple-system, sans-serif;
+}
+
+:root[data-theme="red"] {
+    --brand-primary: #E11D2E;
+    --brand-primary-dark: #B91322;
+    --brand-white: #F9F8F6;
+    --brand-secondary: #F2ECE9;
+    --brand-accent: #FCE2E4;
+    --brand-black: #0B0A0A;
+}
+
+:root[data-theme="green"] {
+    --brand-primary: #059669;
+    --brand-primary-dark: #047857;
+    --brand-white: #F6F9F7;
+    --brand-secondary: #E8F1EC;
+    --brand-accent: #D1FAE5;
+    --brand-black: #090D0B;
+}
+
+* {
+    -webkit-tap-highlight-color: transparent;
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--brand-white);
+    color: var(--brand-black);
+    font-family: var(--font-body);
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.font-display {
+    font-family: var(--font-display);
+}
+
+.font-body {
+    font-family: var(--font-body);
+}
+
+/* Marquee hardware acceleration */
+.marquee-track {
+    display: flex;
+    width: max-content;
+    will-change: transform;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+}
+::-webkit-scrollbar-track {
+    background: var(--brand-white);
+}
+::-webkit-scrollbar-thumb {
+    background: var(--brand-primary);
+    border-radius: 3px;
+}
+
+/* Project card dual-image hover */
+.project-card .img-hover {
+    opacity: 0;
+    transform: scale(1.06);
+    transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+        transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.project-card:hover .img-hover {
+    opacity: 1;
+    transform: scale(1);
+}
+.project-card .img-primary {
+    transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.project-card:hover .img-primary {
+    transform: scale(1.04);
+}
