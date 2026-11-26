@@ -14,7 +14,6 @@ export default function AboutAndShowcase({ showcase }) {
     const aboutText =
         'We believe creative work needs focus. That’s why we keep our team tight and our involvement high, so every project gets our full attention. We build brands from scratch or make them better.';
 
-    // 1. Pinned Character-by-Character Scrubbed About Animation
     useEffect(() => {
         const section = aboutSectionRef.current;
         const para = paraRef.current;
@@ -25,35 +24,20 @@ export default function AboutAndShowcase({ showcase }) {
             const pills = pillsRef.current.filter(Boolean);
 
             gsap.set(section, { willChange: 'transform', force3D: true });
-
             gsap.set(chars, {
-                color: 'color-mix(in srgb, var(--brand-primary) 40%, transparent)',
+                color: 'color-mix(in srgb, var(--brand-primary) 45%, transparent)',
                 scale: 1,
                 rotation: 0,
                 display: 'inline-block',
                 transformOrigin: 'center center',
-                willChange: 'transform, color',
             });
-
-            gsap.set(pills, {
-                opacity: 0,
-                scale: 0.6,
-                y: 24,
-                transformOrigin: 'center center',
-            });
-
-            const getPinDistance = () => {
-                const w = window.innerWidth;
-                if (w < 480) return 1100;
-                if (w < 992) return 1500;
-                return 2000;
-            };
+            gsap.set(pills, { opacity: 0, scale: 0.6, y: 24, transformOrigin: 'center center' });
 
             const tl = gsap.timeline({
                 scrollTrigger: {
                     trigger: section,
                     start: 'top top',
-                    end: () => `+=${getPinDistance()}`,
+                    end: () => `+=${window.innerWidth < 480 ? 1150 : window.innerWidth < 992 ? 1550 : 2200}`,
                     pin: section,
                     pinSpacing: true,
                     scrub: window.innerWidth < 992 ? 0.6 : 0.8,
@@ -63,10 +47,8 @@ export default function AboutAndShowcase({ showcase }) {
             });
 
             const totalChars = chars.length;
-            const span = 85;
-
             chars.forEach((char, i) => {
-                const start = (i / totalChars) * span;
+                const start = (i / totalChars) * 85;
                 tl.to(
                     char,
                     {
@@ -90,15 +72,14 @@ export default function AboutAndShowcase({ showcase }) {
                 );
             });
 
-            if (pills[0]) tl.to(pills[0], { opacity: 1, scale: 1, y: 0, duration: 6, ease: 'back.out(2)' }, 30);
-            if (pills[1]) tl.to(pills[1], { opacity: 1, scale: 1, y: 0, duration: 6, ease: 'back.out(2)' }, 62);
-            if (pills[2]) tl.to(pills[2], { opacity: 1, scale: 1, y: 0, duration: 6, ease: 'back.out(2)' }, 88);
+            if (pills[0]) tl.to(pills[0], { opacity: 1, scale: 1, y: 0, duration: 6, ease: 'back.out(2)' }, 35);
+            if (pills[1]) tl.to(pills[1], { opacity: 1, scale: 1, y: 0, duration: 6, ease: 'back.out(2)' }, 72);
+            if (pills[2]) tl.to(pills[2], { opacity: 1, scale: 1, y: 0, duration: 6, ease: 'back.out(2)' }, 96);
         }, aboutSectionRef);
 
         return () => ctx.revert();
     }, []);
 
-    // 2. Showcase Marquee with Scroll Direction Reversal, Velocity Boost & Center Proximity Scale
     useEffect(() => {
         const wrapper = wrapperRef.current;
         const track = trackRef.current;
@@ -121,7 +102,6 @@ export default function AboutAndShowcase({ showcase }) {
         let targetDir = -1;
         let currentDir = -1;
         let velBoost = 0;
-        const BASE_SPEED = 1.5;
 
         const st = ScrollTrigger.create({
             trigger: document.body,
@@ -138,7 +118,7 @@ export default function AboutAndShowcase({ showcase }) {
         const tick = () => {
             currentDir += (targetDir - currentDir) * 0.06;
             velBoost *= 0.92;
-            currentX += BASE_SPEED * currentDir + velBoost;
+            currentX += 1.5 * currentDir + velBoost;
 
             if (setWidth > 0) {
                 while (currentX <= -setWidth) currentX += setWidth;
@@ -156,13 +136,12 @@ export default function AboutAndShowcase({ showcase }) {
                 const sCenter = sRect.left + sRect.width / 2;
                 const dist = Math.abs(sCenter - wCenter);
                 const norm = Math.min(1, dist / halfW);
-                const targetScale = 0.94 + (1 - 0.94) * norm;
+                const targetScale = 0.95 + (1 - 0.95) * norm;
                 gsap.set(slide, { scale: targetScale, transformOrigin: 'center center' });
             });
         };
 
         gsap.ticker.add(tick);
-
         return () => {
             gsap.ticker.remove(tick);
             st.kill();
@@ -170,38 +149,17 @@ export default function AboutAndShowcase({ showcase }) {
         };
     }, []);
 
-    const pills = [
-        { text: 'Professional overthinkers', rotate: '-rotate-2' },
-        { text: 'Nerding out on design', rotate: 'rotate-2' },
-        { text: 'Allergic to generic', rotate: '-rotate-1' },
-    ];
-
     const words = aboutText.split(' ');
     const doubledShowcase = [...showcase, ...showcase];
 
     return (
         <div>
-            {/* Pinned Full-Viewport About Section */}
-            <section
-                id="about"
-                ref={aboutSectionRef}
-                className="min-h-screen flex flex-col justify-center py-20 px-5 md:px-10 max-w-[1440px] mx-auto"
-            >
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-12 items-start">
-                    <div className="lg:col-span-3">
-                        <span
-                            className="inline-block text-xs font-medium uppercase tracking-[0.2em] px-3.5 py-1.5 rounded-full"
-                            style={{ backgroundColor: 'var(--brand-accent)', color: 'var(--brand-primary)' }}
-                        >
-                            A bit about us
-                        </span>
-                    </div>
-
-                    <div className="lg:col-span-9">
-                        <p
-                            ref={paraRef}
-                            className="text-2xl sm:text-3xl md:text-5xl font-medium leading-[1.18] tracking-tight mb-12"
-                        >
+            {/* Exact .section-about + .about-pinned + .about-pill classes */}
+            <section id="about" ref={aboutSectionRef} className="section-about">
+                <div className="section-about-wrapper">
+                    <div className="about-pinned">
+                        <div className="about-text">A BIT ABOUT US</div>
+                        <p ref={paraRef} className="about-para">
                             {words.map((word, wIdx) => (
                                 <span key={wIdx} className="inline-block whitespace-nowrap mr-[0.26em]">
                                     {word.split('').map((ch, cIdx) => (
@@ -212,57 +170,40 @@ export default function AboutAndShowcase({ showcase }) {
                                 </span>
                             ))}
                         </p>
-
-                        <div className="flex flex-wrap gap-3 md:gap-4">
-                            {pills.map((pill, i) => (
-                                <span
-                                    key={i}
-                                    ref={(el) => (pillsRef.current[i] = el)}
-                                    className={`about-pill inline-flex items-center px-5 py-2.5 rounded-full text-sm md:text-base font-medium border-2 ${pill.rotate}`}
-                                    style={{
-                                        borderColor: 'var(--brand-primary)',
-                                        backgroundColor: i === 1 ? 'var(--brand-primary)' : 'var(--brand-accent)',
-                                        color: i === 1 ? '#FFFFFF' : 'var(--brand-black)',
-                                    }}
-                                >
-                                    {pill.text}
-                                </span>
-                            ))}
+                        <div ref={(el) => (pillsRef.current[0] = el)} className="about-pill second">
+                            <div className="hero-pill-text">Professional overthinkers</div>
+                        </div>
+                        <div ref={(el) => (pillsRef.current[1] = el)} className="about-pill first">
+                            <div className="hero-pill-text">Nerding out on design</div>
+                        </div>
+                        <div ref={(el) => (pillsRef.current[2] = el)} className="about-pill third">
+                            <div className="hero-pill-text">Allergic to generic</div>
                         </div>
                     </div>
                 </div>
             </section>
 
-            {/* Bidirectional Velocity + Proximity-Scaled Showcase Marquee */}
-            <section
-                ref={wrapperRef}
-                className="py-12 md:py-20 overflow-hidden border-y"
-                style={{
-                    backgroundColor: 'var(--brand-secondary)',
-                    borderColor: 'color-mix(in srgb, var(--brand-black) 8%, transparent)',
-                }}
-            >
-                <div ref={trackRef} className="flex flex-row items-center gap-6 w-max will-change-transform">
-                    {doubledShowcase.map((item, idx) => (
-                        <div
-                            key={idx}
-                            className="showcase-slide w-[280px] sm:w-[360px] md:w-[440px] aspect-[4/3] rounded-2xl overflow-hidden shrink-0 shadow-lg border will-change-transform"
-                            style={{ borderColor: 'color-mix(in srgb, var(--brand-black) 10%, transparent)' }}
-                        >
-                            {item.type === 'video' ? (
-                                <video autoPlay loop muted playsInline className="w-full h-full object-cover">
-                                    <source src={item.webm} type="video/webm" />
-                                    <source src={item.mp4} type="video/mp4" />
-                                </video>
-                            ) : (
-                                <img
-                                    src={item.src}
-                                    alt={`Studio showcase ${(idx % showcase.length) + 1}`}
-                                    className="w-full h-full object-cover"
-                                />
-                            )}
-                        </div>
-                    ))}
+            {/* Exact .section-slider-showcase + .showcase-slider */}
+            <section className="section-slider-showcase">
+                <div ref={wrapperRef} className="section-slider-wrapper">
+                    <div ref={trackRef} className="showcase-slider">
+                        {doubledShowcase.map((item, idx) => (
+                            <div key={idx} className="showcase-slide">
+                                {item.type === 'video' ? (
+                                    <video autoPlay loop muted playsInline className="w-full h-full object-cover">
+                                        <source src={item.mp4} type="video/mp4" />
+                                        <source src={item.webm} type="video/webm" />
+                                    </video>
+                                ) : (
+                                    <img
+                                        src={item.src}
+                                        alt={`Showcase ${(idx % showcase.length) + 1}`}
+                                        className="w-full h-full object-cover"
+                                    />
+                                )}
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </section>
         </div>
