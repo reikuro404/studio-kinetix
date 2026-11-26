@@ -20,63 +20,53 @@ export default function AboutAndShowcase({ showcase }) {
         if (!section || !para) return;
 
         const ctx = gsap.context(() => {
-            const chars = Array.from(para.querySelectorAll('.about-char'));
+            // Word-level highlight (34 words vs 190 chars = ~6x lighter, zero layout thrash)
+            const wordEls = Array.from(para.querySelectorAll('.about-word'));
             const pills = pillsRef.current.filter(Boolean);
 
-            gsap.set(section, { willChange: 'transform', force3D: true });
-            gsap.set(chars, {
-                color: 'color-mix(in srgb, var(--brand-primary) 45%, transparent)',
-                scale: 1,
-                rotation: 0,
-                display: 'inline-block',
-                transformOrigin: 'center center',
+            gsap.set(wordEls, {
+                color: 'color-mix(in srgb, var(--brand-primary) 40%, transparent)',
             });
-            gsap.set(pills, { opacity: 0, scale: 0.6, y: 24, transformOrigin: 'center center' });
+            gsap.set(pills, { opacity: 0, scale: 0.7, y: 20, transformOrigin: 'center center' });
 
             const tl = gsap.timeline({
                 scrollTrigger: {
                     trigger: section,
                     start: 'top top',
-                    end: () => `+=${window.innerWidth < 480 ? 1150 : window.innerWidth < 992 ? 1550 : 2200}`,
+                    end: () => `+=${window.innerWidth < 480 ? 900 : window.innerWidth < 992 ? 1200 : 1600}`,
                     pin: section,
                     pinSpacing: true,
-                    scrub: window.innerWidth < 992 ? 0.6 : 0.8,
+                    scrub: 0.5,
                     anticipatePin: 1,
                     invalidateOnRefresh: true,
                 },
             });
 
-            const totalChars = chars.length;
-            chars.forEach((char, i) => {
-                const start = (i / totalChars) * 85;
+            const totalWords = wordEls.length;
+            wordEls.forEach((word, i) => {
+                const start = (i / totalWords) * 82;
                 tl.to(
-                    char,
+                    word,
                     {
                         color: 'var(--brand-primary)',
-                        scale: 1.12,
-                        rotation: () => gsap.utils.random(-4, 4),
-                        duration: 3.5,
-                        ease: 'power1.out',
-                        force3D: true,
+                        duration: 4,
+                        ease: 'none',
                     },
                     start
                 ).to(
-                    char,
+                    word,
                     {
                         color: 'var(--brand-black)',
-                        scale: 1,
-                        rotation: 0,
-                        duration: 3.5,
-                        ease: 'power1.inOut',
-                        force3D: true,
+                        duration: 4,
+                        ease: 'none',
                     },
-                    start + 3.5
+                    start + 4
                 );
             });
 
-            if (pills[0]) tl.to(pills[0], { opacity: 1, scale: 1, y: 0, duration: 6, ease: 'back.out(2)' }, 35);
-            if (pills[1]) tl.to(pills[1], { opacity: 1, scale: 1, y: 0, duration: 6, ease: 'back.out(2)' }, 72);
-            if (pills[2]) tl.to(pills[2], { opacity: 1, scale: 1, y: 0, duration: 6, ease: 'back.out(2)' }, 96);
+            if (pills[0]) tl.to(pills[0], { opacity: 1, scale: 1, y: 0, duration: 7, ease: 'back.out(1.8)' }, 30);
+            if (pills[1]) tl.to(pills[1], { opacity: 1, scale: 1, y: 0, duration: 7, ease: 'back.out(1.8)' }, 62);
+            if (pills[2]) tl.to(pills[2], { opacity: 1, scale: 1, y: 0, duration: 7, ease: 'back.out(1.8)' }, 86);
         }, aboutSectionRef);
 
         return () => ctx.revert();
@@ -91,6 +81,8 @@ export default function AboutAndShowcase({ showcase }) {
         if (!slides.length) return;
 
         let setWidth = 0;
+        let isVisible = false;
+
         const measure = () => {
             const half = slides.length / 2;
             if (slides[half] && slides[0]) {
@@ -99,6 +91,15 @@ export default function AboutAndShowcase({ showcase }) {
         };
         measure();
         window.addEventListener('resize', measure);
+
+        // Only run ticker work when slider is near/in viewport
+        const io = new IntersectionObserver(
+            ([entry]) => {
+                isVisible = entry.isIntersecting;
+            },
+            { rootMargin: '200px 0px' }
+        );
+        io.observe(wrapper);
 
         let currentX = 0;
         let targetDir = -1;
@@ -110,43 +111,34 @@ export default function AboutAndShowcase({ showcase }) {
             start: 'top top',
             end: 'bottom bottom',
             onUpdate: (self) => {
+                if (!isVisible) return;
                 const dir = self.direction === 1 ? -1 : 1;
                 targetDir = dir;
                 const vel = Math.abs(self.getVelocity() || 0);
-                velBoost = Math.min(vel / 220, 10) * dir;
+                velBoost = Math.min(vel / 240, 9) * dir;
             },
         });
 
         const tick = () => {
+            if (!isVisible) return;
             currentDir += (targetDir - currentDir) * 0.06;
             velBoost *= 0.92;
-            currentX += 1.5 * currentDir + velBoost;
+            currentX += 1.4 * currentDir + velBoost;
 
             if (setWidth > 0) {
                 while (currentX <= -setWidth) currentX += setWidth;
                 while (currentX > 0) currentX -= setWidth;
             }
 
-            gsap.set(track, { x: currentX, force3D: true });
-
-            const wRect = wrapper.getBoundingClientRect();
-            const wCenter = wRect.left + wRect.width / 2;
-            const halfW = wRect.width * 0.45 || 400;
-
-            slides.forEach((slide) => {
-                const sRect = slide.getBoundingClientRect();
-                const sCenter = sRect.left + sRect.width / 2;
-                const dist = Math.abs(sCenter - wCenter);
-                const norm = Math.min(1, dist / halfW);
-                const targetScale = 0.95 + (1 - 0.95) * norm;
-                gsap.set(slide, { scale: targetScale, transformOrigin: 'center center' });
-            });
+            // Pure GPU transform — zero getBoundingClientRect() layout thrashing!
+            track.style.transform = `translate3d(${currentX}px, 0, 0)`;
         };
 
         gsap.ticker.add(tick);
         return () => {
             gsap.ticker.remove(tick);
             st.kill();
+            io.disconnect();
             window.removeEventListener('resize', measure);
         };
     }, []);
@@ -163,12 +155,8 @@ export default function AboutAndShowcase({ showcase }) {
                         <div className="about-text">A BIT ABOUT US</div>
                         <p ref={paraRef} className="about-para">
                             {words.map((word, wIdx) => (
-                                <span key={wIdx} className="inline-block whitespace-nowrap mr-[0.26em]">
-                                    {word.split('').map((ch, cIdx) => (
-                                        <span key={cIdx} className="about-char">
-                                            {ch}
-                                        </span>
-                                    ))}
+                                <span key={wIdx} className="about-word inline-block mr-[0.26em]">
+                                    {word}
                                 </span>
                             ))}
                         </p>
@@ -188,7 +176,7 @@ export default function AboutAndShowcase({ showcase }) {
             {/* Exact .section-slider-showcase + .showcase-slider */}
             <section className="section-slider-showcase">
                 <div ref={wrapperRef} className="section-slider-wrapper">
-                    <div ref={trackRef} className="showcase-slider">
+                    <div ref={trackRef} className="showcase-slider will-change-transform">
                         {doubledShowcase.map((item, idx) => (
                             <div key={idx} className="showcase-slide">
                                 {item.type === 'video' ? (

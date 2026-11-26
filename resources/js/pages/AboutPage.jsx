@@ -61,20 +61,20 @@ export default function AboutPage({ about, onOpenContact }) {
                 });
             }
 
-            // 3. Story character-by-character scroll highlight
+            // 3. Story word-by-word scroll highlight (lightweight, 60fps)
             if (storyParaRef.current) {
-                const chars = Array.from(storyParaRef.current.querySelectorAll('.about-page-char'));
-                gsap.set(chars, { opacity: 0.25, color: 'var(--brand-primary)' });
-                gsap.to(chars, {
+                const words = Array.from(storyParaRef.current.querySelectorAll('.about-page-word'));
+                gsap.set(words, { opacity: 0.28, color: 'var(--brand-primary)' });
+                gsap.to(words, {
                     opacity: 1,
                     color: 'var(--brand-black)',
-                    stagger: 0.02,
+                    stagger: 0.06,
                     ease: 'none',
                     scrollTrigger: {
                         trigger: storyParaRef.current,
                         start: 'top 78%',
                         end: 'bottom 55%',
-                        scrub: 0.7,
+                        scrub: 0.6,
                     },
                 });
             }
@@ -189,12 +189,8 @@ export default function AboutPage({ about, onOpenContact }) {
                             {about.story.map((p, i) => (
                                 <p key={i}>
                                     {p.split(' ').map((word, wIdx) => (
-                                        <span key={wIdx} className="inline-block mr-[0.26em]">
-                                            {word.split('').map((ch, cIdx) => (
-                                                <span key={cIdx} className="about-page-char inline-block">
-                                                    {ch}
-                                                </span>
-                                            ))}
+                                        <span key={wIdx} className="about-page-word inline-block mr-[0.26em]">
+                                            {word}
                                         </span>
                                     ))}
                                 </p>
