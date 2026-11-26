@@ -233,39 +233,33 @@ export default function ProjectsSection({ projects, onNavigate }) {
                 ))}
             </div>
 
-            <div
-                className="mt-20 md:mt-28 p-8 md:p-14 rounded-3xl flex flex-col md:flex-row items-start md:items-center justify-between gap-8 border"
-                style={{
-                    backgroundColor: 'var(--brand-accent)',
-                    borderColor: 'color-mix(in srgb, var(--brand-primary) 20%, transparent)',
-                }}
-            >
-                <div className="max-w-xl">
-                    <div className="flex flex-wrap gap-2 mb-4">
-                        {['The plot thickens', 'Very convenient', "There's more"].map((tag, i) => (
-                            <span
-                                key={i}
-                                className="text-xs font-medium px-3 py-1 rounded-full bg-white/80"
-                                style={{ color: 'var(--brand-primary)' }}
-                            >
-                                {tag}
-                            </span>
-                        ))}
+            {/* Exact .projects-end layout from two26.studio */}
+            <div className="projects-end">
+                <div className="projects-end-inner-wrapper">
+                    <p className="projects-end-para">WE COULD KEEP GOING, BUT THERE’S A WHOLE PAGE FOR THAT.</p>
+                    <div className="projects-pill-first">
+                        <div className="hero-pill-text">The plot thickens</div>
                     </div>
-                    <h3 className="font-display text-3xl md:text-5xl uppercase leading-none tracking-tight">
-                        We could keep going, but there&apos;s a whole page for that.
-                    </h3>
+                    <div className="projects-pill-second">
+                        <div className="hero-pill-text">Very convenient</div>
+                    </div>
+                    <div className="projects-pill-fourth">
+                        <div className="hero-pill-text">There’s more</div>
+                    </div>
+                    <a
+                        href="/work"
+                        onClick={(e) => {
+                            e.preventDefault();
+                            onNavigate?.('/work');
+                        }}
+                        className="project-btn w-inline-block"
+                    >
+                        <div className="cta-text">See all projects</div>
+                        <div className="cta-btn-arrow">
+                            <ArrowUpRight className="w-3.5 h-3.5" />
+                        </div>
+                    </a>
                 </div>
-
-                <button
-                    type="button"
-                    onClick={() => onNavigate?.('/work')}
-                    className="group inline-flex items-center gap-3 px-7 py-4 rounded-full text-base font-medium text-white shrink-0 transition-transform duration-300 hover:scale-105 cursor-pointer"
-                    style={{ backgroundColor: 'var(--brand-primary)' }}
-                >
-                    <span>See all projects</span>
-                    <ArrowUpRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                </button>
             </div>
         </section>
     );

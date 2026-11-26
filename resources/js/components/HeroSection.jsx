@@ -80,15 +80,15 @@ export default function HeroSection({ ready }) {
     useEffect(() => {
         if (!ready) return;
         const ctx = gsap.context(() => {
-            const tl = gsap.timeline({ defaults: { ease: 'power2.out' } }).timeScale(0.75);
+            const tl = gsap.timeline({ defaults: { ease: 'power2.out' } });
 
             tl.to(
                 '.hero-line-inner',
                 {
                     y: '0%',
                     opacity: 1,
-                    duration: 0.85,
-                    stagger: 0.12,
+                    duration: 0.75,
+                    stagger: 0.1,
                     ease: 'back.out(1.4)',
                 },
                 0
@@ -96,17 +96,17 @@ export default function HeroSection({ ready }) {
 
             pillRefs.current.forEach((pill, i) => {
                 if (!pill) return;
-                const start = 0.2 + i * 0.16;
-                tl.to(pill, { opacity: 1, scale: 1, y: 0, duration: 0.55, ease: 'back.out(2.5)' }, start);
+                const start = 0.15 + i * 0.12;
+                tl.to(pill, { opacity: 1, scale: 1, y: 0, duration: 0.5, ease: 'back.out(2.5)' }, start);
                 const tEl = pillTextRefs.current[i];
                 if (tEl) {
-                    tl.to(tEl, { y: '0%', opacity: 1, duration: 0.5, ease: 'back.out(1.6)' }, start + 0.15);
+                    tl.to(tEl, { y: '0%', opacity: 1, duration: 0.45, ease: 'back.out(1.6)' }, start + 0.12);
                 }
             });
 
             [pathLeftRef.current, pathRightRef.current].forEach((p, i) => {
                 if (!p) return;
-                tl.to(p, { strokeDashoffset: 0, strokeWidth: 30, duration: 0.9, ease: 'power2.out' }, 0.4 + i * 0.15);
+                tl.to(p, { strokeDashoffset: 0, strokeWidth: 30, duration: 0.8, ease: 'power2.out' }, 0.3 + i * 0.12);
             });
         }, sectionRef);
 
