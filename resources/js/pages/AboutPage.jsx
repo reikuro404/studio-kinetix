@@ -45,54 +45,59 @@ export default function AboutPage({ about, onOpenContact }) {
                 });
             }
 
-            // 2. Giant 3457px-tall winding body SVG path scrubbed by ScrollTrigger
+            // 2. Lightweight GPU-composited parallax on winding body SVG (no CPU strokeDashoffset re-rasterization!)
             if (bodyPathRef.current) {
-                const len = bodyPathRef.current.getTotalLength();
-                gsap.set(bodyPathRef.current, { strokeDasharray: len, strokeDashoffset: len });
                 gsap.to(bodyPathRef.current, {
-                    strokeDashoffset: 0,
+                    y: -90,
                     ease: 'none',
+                    force3D: true,
                     scrollTrigger: {
                         trigger: '.about-body-flow',
-                        start: 'top 65%',
-                        end: 'bottom 85%',
-                        scrub: 1.1,
+                        start: 'top bottom',
+                        end: 'bottom top',
+                        scrub: true,
                     },
                 });
             }
 
-            // 3. Story word-by-word scroll highlight (lightweight, 60fps)
+            // 3. Smooth paragraph reveal (replaces ~120 per-word scrub tweens)
             if (storyParaRef.current) {
-                const words = Array.from(storyParaRef.current.querySelectorAll('.about-page-word'));
-                gsap.set(words, { opacity: 0.28, color: 'var(--brand-primary)' });
-                gsap.to(words, {
-                    opacity: 1,
-                    color: 'var(--brand-black)',
-                    stagger: 0.06,
-                    ease: 'none',
-                    scrollTrigger: {
-                        trigger: storyParaRef.current,
-                        start: 'top 78%',
-                        end: 'bottom 55%',
-                        scrub: 0.6,
-                    },
-                });
+                const paras = Array.from(storyParaRef.current.querySelectorAll('p'));
+                gsap.fromTo(
+                    paras,
+                    { y: 24, opacity: 0.2 },
+                    {
+                        y: 0,
+                        opacity: 1,
+                        duration: 0.7,
+                        stagger: 0.14,
+                        ease: 'power2.out',
+                        force3D: true,
+                        scrollTrigger: {
+                            trigger: storyParaRef.current,
+                            start: 'top 82%',
+                            once: true,
+                        },
+                    }
+                );
             }
 
-            // 4. Team cards staggered bounce entrance
+            // 4. Team cards staggered entrance (once: true, GPU accelerated)
             gsap.fromTo(
                 '.team-card-anim',
-                { y: 45, opacity: 0, scale: 0.94 },
+                { y: 36, opacity: 0, scale: 0.96 },
                 {
                     y: 0,
                     opacity: 1,
                     scale: 1,
-                    duration: 0.75,
-                    stagger: 0.14,
-                    ease: 'back.out(1.4)',
+                    duration: 0.65,
+                    stagger: 0.1,
+                    ease: 'power3.out',
+                    force3D: true,
                     scrollTrigger: {
                         trigger: '.team-grid-anim',
-                        start: 'top 80%',
+                        start: 'top 84%',
+                        once: true,
                     },
                 }
             );
@@ -149,16 +154,16 @@ export default function AboutPage({ about, onOpenContact }) {
                 </div>
             </div>
 
-            {/* Body Flow with Giant 3457px-tall Winding SVG Path */}
+            {/* Body Flow with GPU-cached Winding SVG Path */}
             <div className="about-body-flow relative max-w-[1440px] mx-auto px-5 md:px-10">
                 <svg
-                    className="hidden md:block absolute inset-x-0 top-0 w-full h-full pointer-events-none opacity-15 z-0"
+                    ref={bodyPathRef}
+                    className="hidden md:block absolute inset-x-0 top-0 w-full h-full pointer-events-none opacity-15 z-0 will-change-transform"
                     viewBox="0 0 1440 3457"
                     fill="none"
                     preserveAspectRatio="xMidYMin slice"
                 >
                     <path
-                        ref={bodyPathRef}
                         d="M723.846 50.0081C650.835 174.483 836.793 262.47 825.385 406.936C799.653 732.805 98.5142 598.392 111.169 948.003C123.495 1288.51 1122.55 1135.95 1155.5 1698.51C1177.93 2081.41 570.052 2505.13 400.796 2311.05C308.932 2205.72 378.305 2027.34 533.817 2045.1C673.838 2061.1 699.146 2203.11 688.426 2277.8C657.968 2490.01 565.5 2804.01 688.426 3098.51"
                         stroke="var(--brand-primary)"
                         strokeWidth="100"
@@ -171,7 +176,7 @@ export default function AboutPage({ about, onOpenContact }) {
                 <div
                     className="relative z-10 p-8 md:p-14 rounded-3xl border mb-20 md:mb-28 grid grid-cols-1 lg:grid-cols-12 gap-10 items-center about-page-stagger"
                     style={{
-                        backgroundColor: 'color-mix(in srgb, var(--brand-secondary) 92%, transparent)',
+                        backgroundColor: 'var(--brand-secondary)',
                         borderColor: 'color-mix(in srgb, var(--brand-black) 8%, transparent)',
                     }}
                 >
@@ -185,15 +190,9 @@ export default function AboutPage({ about, onOpenContact }) {
                         <h2 className="font-display text-4xl md:text-6xl uppercase leading-[0.95] tracking-tight mb-6">
                             {about.storyTitle}
                         </h2>
-                        <div ref={storyParaRef} className="space-y-4 text-base md:text-lg leading-relaxed">
+                        <div ref={storyParaRef} className="space-y-4 text-base md:text-lg leading-relaxed opacity-85">
                             {about.story.map((p, i) => (
-                                <p key={i}>
-                                    {p.split(' ').map((word, wIdx) => (
-                                        <span key={wIdx} className="about-page-word inline-block mr-[0.26em]">
-                                            {word}
-                                        </span>
-                                    ))}
-                                </p>
+                                <p key={i}>{p}</p>
                             ))}
                         </div>
                     </div>
