@@ -235,67 +235,86 @@ export default function TestimonialsAndFaq({ testimonials, faqs }) {
                 </div>
             </section>
 
-            {/* Chat-Bubble Split FAQ Accordion (exact two26.studio style) */}
-            <section className="section-faq py-20 md:py-28 px-5 md:px-10 max-w-[1440px] mx-auto">
-                <div className="section-projects-header mb-12">
-                    <div className="section-about-text">Frequently Asked Questions</div>
-                    <div className="section-heading-wrapper">
-                        <MagneticHeading className="section-heading">
-                            THINGS YOU MIGHT ASK
-                        </MagneticHeading>
-                    </div>
-                </div>
-
-                <div className="space-y-4">
-                    {faqs.map((faq, idx) => {
-                        const isOpen = openFaq === idx;
-                        return (
-                            <div
-                                key={idx}
-                                className="border-b pb-4"
-                                style={{ borderColor: 'color-mix(in srgb, var(--brand-black) 10%, transparent)' }}
-                            >
-                                <button
-                                    type="button"
-                                    onClick={() => setOpenFaq(isOpen ? -1 : idx)}
-                                    className={`flex items-center justify-between gap-4 text-left cursor-pointer px-5 py-4 rounded-2xl transition-all duration-500 ease-out ${
-                                        isOpen ? 'w-[85%] lg:w-[52%]' : 'w-full'
-                                    }`}
-                                    style={{
-                                        borderWidth: isOpen ? '1px' : '0px',
-                                        borderStyle: 'solid',
-                                        borderColor: 'var(--brand-primary)',
-                                        backgroundColor: isOpen ? 'var(--brand-accent)' : 'transparent',
-                                    }}
-                                >
-                                    <span className="text-lg md:text-xl font-medium tracking-tight">{faq.q}</span>
-                                    <span
-                                        className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-transform duration-300"
-                                        style={{
-                                            backgroundColor: isOpen ? 'var(--brand-primary)' : 'var(--brand-secondary)',
-                                            color: isOpen ? '#FFFFFF' : 'var(--brand-black)',
-                                            transform: isOpen ? 'rotate(45deg)' : 'rotate(0deg)',
-                                        }}
-                                    >
-                                        <Plus className="w-4 h-4" />
-                                    </span>
-                                </button>
-
-                                <div
-                                    className={`flex justify-end transition-all duration-500 ease-out origin-bottom-right ${
-                                        isOpen ? 'opacity-100 scale-100 mt-3 max-h-96' : 'opacity-0 scale-75 max-h-0 overflow-hidden'
-                                    }`}
-                                >
-                                    <div
-                                        className="w-full md:w-[54%] p-5 md:p-6 rounded-2xl text-white"
-                                        style={{ backgroundColor: 'var(--brand-primary)' }}
-                                    >
-                                        <p className="text-sm md:text-base leading-relaxed">{faq.a}</p>
-                                    </div>
-                                </div>
+            {/* Exact two26.studio 2-Column Chat-Bubble FAQ + Sleeping Cat */}
+            <section className="section-faq">
+                <div className="section-faq-wrapper">
+                    <div className="faq-left">
+                        <div className="section-faq-header">
+                            <div className="about-text">Frequently Asked Questions</div>
+                            <div className="section-heading-wrapper">
+                                <MagneticHeading className="section-heading left-align">
+                                    THINGS YOU MIGHT ASK
+                                </MagneticHeading>
                             </div>
-                        );
-                    })}
+                        </div>
+                        <div className="cat-svg">
+                            <img
+                                src="/assets/media/faq-cat.svg"
+                                alt="Sleeping studio cat"
+                                className="w-full h-auto block select-none"
+                                loading="lazy"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="faq-right">
+                        <div className="faq-list-wrapper">
+                            <div role="list" className="faq-list">
+                                {faqs.map((faq, idx) => {
+                                    const isOpen = openFaq === idx;
+                                    return (
+                                        <div
+                                            key={idx}
+                                            role="listitem"
+                                            className={`faq-item ${isOpen ? 'is-open' : ''}`}
+                                        >
+                                            <div className="faq-block">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setOpenFaq(isOpen ? -1 : idx)}
+                                                    className="question-block text-left cursor-pointer transition-all duration-500 ease-out"
+                                                    style={{
+                                                        width: isOpen
+                                                            ? 'min(100%, 26em)'
+                                                            : '100%',
+                                                        borderWidth: isOpen ? '1px' : '0px',
+                                                        borderStyle: 'solid',
+                                                        borderColor: 'var(--brand-primary)',
+                                                    }}
+                                                >
+                                                    <div className="faq-ques">{faq.q}</div>
+                                                </button>
+
+                                                <div
+                                                    className="faq-block-btm transition-all duration-500 ease-out"
+                                                    style={{
+                                                        display: isOpen ? 'flex' : 'none',
+                                                        opacity: isOpen ? 1 : 0,
+                                                        transform: isOpen ? 'scale(1)' : 'scale(0.95)',
+                                                        transformOrigin: 'right bottom',
+                                                    }}
+                                                >
+                                                    <div className="answer-block">
+                                                        <p className="faq-answer">{faq.a}</p>
+                                                    </div>
+                                                    <div className="faq-logo">
+                                                        <div className="faq-logo-svg">
+                                                            <span
+                                                                className="font-display text-sm font-extrabold tracking-tight"
+                                                                style={{ color: '#EBEAE6' }}
+                                                            >
+                                                                KX
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </section>
         </div>
